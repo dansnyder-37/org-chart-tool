@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ultimate Org Chart Builder</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-org-chart@2.6.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-flextree@2.1.2/build/d3-flextree.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; padding: 20px; color: #1e293b; }
+        #controls { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .chart-container { height: 60vh; background: white; border-radius: 12px; border: 1px solid #cbd5e1; }
+        
+        .section-title { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        
+        label { font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 5px; }
+        input { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 13px; }
+        
+        .btn { padding: 10px 14px; color: white; border: none; cursor: pointer; border-radius: 8px; font-weight: 600; font-size: 12px; transition: transform 0.1s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-blue { background: #2563eb; }
+        .btn-red { background: #dc2626; }
+        .btn-orange { background: #f59e0b; }
+        .btn-purple { background: #7c3aed; }
+        .btn-gray { background: #64748b; }
+        .btn-green { background: #16a34a; }
+
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<div id="controls">
+    <div class="toolbar">
+        <h2 style="margin:0">Org Chart Command Center</h2>
+        <div style="display:flex; gap:8px">
+            <input type="file" id="fileInput" style="width: auto;" accept=".csv" />
+            <button class="btn btn-green" onclick="downloadCSV()">Export CSV</button>
+            <button class="btn btn-gray" onclick="chart.exportImg()">Save Image</button>
+            <button class="btn btn-gray" style="background:#475569" onclick="resetFilter()">Reset View</button>
+        </div>
+    </div>
+
+    <div class="section-title">Navigation & Modifications</div>
+    <div class="grid">
+        <div>
+            <label>Target Employee</label>
+            <input type="text" id="targetEmployee" list="namesList" placeholder="Search name...">
+        </div>
+        <div>
+            <label>New Manager (For Move/Add)</label>
+            <input type="text" id="targetManager" list="namesList" placeholder="Search manager...">
+        </div>
+        <div style="display: flex; align-items: end; gap: 5px;">
+            <button class="btn btn-purple" onclick="focusOnTeam()" title="Isolate this team">Focus Team</button>
+            <button class="btn btn-orange" onclick="actionMove()">Move</button>
+            <button class="btn btn-red" onclick="actionDelete()">Delete</button>
+        </div>
+    </div>
+
+    <div class="section-title">Add New Employee</div>
+    <div class="grid">
+        <input type="text" id="newName" placeholder="Full Name">
+        <input type="text" id="newTitle" placeholder="Job Title">
+        <input type="text" id="newDept" placeholder="Department">
+        <button class="btn btn-blue" onclick="actionAdd()">+ Create & Assign to Manager Above</button>
+    </div>
+
+    <datalist id="namesList"></datalist>
+</div>
+
+<div class="chart-container"></div>
+
+<script>
+    let chart = new d3.OrgChart().container('.chart-container');
+    let allData = [];
+
+    // --- Actions ---
+
+    function focusOnTeam() {
+        const name = document.getElementById('targetEmployee').value;
+        if (!name) return alert("Select a name in 'Target Employee' first.");
+        const rootNode = allData.find(d => d.id === name);
+        if (!rootNode) return alert("Name not found.");
+
+        const descendants = [rootNode];
+        function getChildren(parentId) {
+            allData.forEach(d => {
+                if (d.parentId === parentId) {
+                    descendants.push(d);
+                    getChildren(d.id);
+                }
+            });
+        }
+        getChildren(name);
+        const focusedData = JSON.parse(JSON.stringify(descendants));
+        focusedData.find(d => d.id === name).parentId = null;
+        chart.data(focusedData).render().fit();
+    }
+
+    function actionMove() {
+        const empName = document.getElementById('targetEmployee').value;
+        const managerName = document.getElementById('targetManager').value;
+        if (!empName || !managerName) return alert("Select Employee AND New Manager.");
+        const employee = allData.find(d => d.id === empName);
+        if (!employee) return alert("Employee not found.");
+        employee.parentId = managerName;
+        refresh();
+    }
+
+    function actionDelete() {
+        const name = document.getElementById('targetEmployee').value;
+        if (!name || !confirm(`Delete ${name}? Subordinates will move to their boss.`)) return;
+        const person = allData.find(d => d.id === name);
+        if (!person) return;
+        allData.forEach(d => { if (d.parentId === name) d.parentId = person.parentId; });
+        allData = allData.filter(d => d.id !== name);
+        refresh();
+    }
+
+    function actionAdd() {
+        const name = document.getElementById('newName').value;
+        const manager = document.getElementById('targetManager').value;
+        if (!name || !manager) return alert("Enter New Name and select a Manager.");
+        allData.push({
+            id: name, name: name,
+            title: document.getElementById('newTitle').value,
+            department: document.getElementById('newDept').value,
+            parentId: manager
+        });
+        document.getElementById('newName').value = "";
+        refresh();
+    }
+
+    function resetFilter() {
+        chart.data(allData).render().fit();
+    }
+
+    function refresh() {
+        updateAutocomplete();
+        chart.data(allData).render().fit();
+    }
+
+    function updateAutocomplete() {
+        const list = document.getElementById('namesList');
+        list.innerHTML = "";
+        allData.filter(d => !d.isGhost).forEach(d => {
+            const opt = document.createElement('option'); opt.value = d.name; list.appendChild(opt);
+        });
+    }
+
+    // --- Infrastructure ---
+
+    function parseCSV(text) {
+        const rows = []; let cur = []; let field = ''; let inQ = false;
+        for (let i = 0; i < text.length; i++) {
+            let c = text[i];
+            if (c === '"' && inQ && text[i+1] === '"') { field += '"'; i++; }
+            else if (c === '"') inQ = !inQ;
+            else if (c === ',' && !inQ) { cur.push(field.trim()); field = ''; }
+            else if ((c === '\n' || c === '\r') && !inQ) {
+                if (field || cur.length > 0) { cur.push(field.trim()); rows.push(cur); }
+                cur = []; field = ''; if (c === '\r' && text[i+1] === '\n') i++;
+            } else field += c;
+        }
+        if (field || cur.length > 0) { cur.push(field.trim()); rows.push(cur); }
+        return rows;
+    }
+
+    function downloadCSV() {
+        let csv = "Name,Title,Manager,Department\n";
+        allData.filter(d => !d.isGhost).forEach(d => {
+            csv += `"${d.name}","${d.title}","${d.parentId === 'ROOT' ? '' : d.parentId}","${d.department}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'updated_org.csv'; a.click();
+    }
+
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const rows = parseCSV(event.target.result);
+            allData = rows.slice(1).map(cols => ({
+                id: cols[0], name: cols[0], title: cols[1] || "",
+                parentId: cols[2] || "ROOT", department: cols[3] || ""
+            }));
+            const names = new Set(allData.map(d => d.id));
+            allData.forEach(d => { if (d.parentId !== "ROOT" && !names.has(d.parentId)) d.parentId = "ROOT"; });
+            allData.push({ id: "ROOT", name: "Company", isGhost: true });
+            
+            chart.data(allData).nodeWidth(d => 220).nodeHeight(d => 100).compact(true)
+                .nodeContent(d => {
+                    if (d.data.isGhost) return `<div style="display:none"></div>`;
+                    return `<div style="padding:10px; background:white; border:1px solid #cbd5e1; border-radius:8px; height:78px;">
+                        <div style="font-weight:bold; font-size:13px; color:#1e293b;">${d.data.name}</div>
+                        <div style="font-size:11px; color:#64748b; margin-top:2px;">${d.data.title}</div>
+                        <div style="font-size:10px; color:#2563eb; margin-top:6px; font-weight:bold;">${d.data.department}</div>
+                    </div>`;
+                }).render().fit();
+            updateAutocomplete();
+        };
+        reader.readAsText(e.target.files[0]);
+    });
+</script>
+</body>
+</html>
