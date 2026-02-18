@@ -2,160 +2,219 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>HR Strategic Executive Suite - Financial Analytics</title>
+    <title>HR Executive Intelligence - Health & Growth BI</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-org-chart@2.6.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-flextree@2.1.2/build/d3-flextree.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; padding: 20px; color: #1e293b; margin: 0; overflow-x: hidden; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; padding: 20px; color: #1e293b; margin: 0; overflow-x: hidden; }
         
-        /* Stats Bar Adjusted for 5 Items */
         #statsBar { 
-            display: flex; gap: 30px; margin-bottom: 20px; 
-            background: #1e293b; color: white; padding: 18px 25px; 
-            border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            justify-content: space-between;
+            display: flex; gap: 20px; margin-bottom: 15px; 
+            background: #0f172a; color: white; padding: 15px 25px; 
+            border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            justify-content: space-between; border: 1px solid rgba(255,255,255,0.1);
         }
-        .stat-item { display: flex; flex-direction: column; min-width: 120px; }
-        .stat-value { font-size: 20px; font-weight: 800; color: #38bdf8; white-space: nowrap; }
-        .stat-label { font-size: 9px; text-transform: uppercase; opacity: 0.7; margin-bottom: 2px; letter-spacing: 0.03em; }
+        .stat-item { display: flex; flex-direction: column; flex: 1; border-right: 1px solid rgba(255,255,255,0.1); padding-left: 10px; }
+        .stat-item:last-child { border-right: none; }
+        .stat-value { font-size: 18px; font-weight: 800; color: #38bdf8; }
+        .stat-label { font-size: 9px; text-transform: uppercase; opacity: 0.6; font-weight: 700; letter-spacing: 0.05em; }
 
-        #analyticsSidebar {
-            position: fixed; right: -410px; top: 0; width: 340px; height: 100vh;
-            background: white; border-left: 1px solid #e2e8f0; box-shadow: -10px 0 30px rgba(0,0,0,0.1);
-            z-index: 3000; padding: 30px; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            overflow-y: auto; visibility: hidden;
+        #analyticsDashboard {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #ffffff; z-index: 6000; padding: 40px 60px; box-sizing: border-box;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(100%); overflow-y: auto;
         }
-        #analyticsSidebar.open { right: 0; visibility: visible; }
-        .close-sidebar { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 20px; font-weight: bold; color: #94a3b8; border: none; background: none; }
+        #analyticsDashboard.open { transform: translateY(0); }
+        .close-dash { position: fixed; top: 30px; right: 40px; padding: 10px 24px; background: #0f172a; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 800; z-index: 6001; }
         
-        .dashboard-section { margin-bottom: 25px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; }
-        .dashboard-h3 { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 15px; letter-spacing: 0.05em; }
-        .metric-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
-        .metric-val { font-weight: 700; color: #1e293b; }
+        .dash-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; }
+        .dash-grid { display: grid; grid-template-columns: 380px 1fr; gap: 50px; }
+        .analytics-column { display: flex; flex-direction: column; gap: 20px; }
+        .chart-column { background: #f8fafc; padding: 30px; border-radius: 24px; border: 1px solid #e2e8f0; }
+        
+        .dashboard-h3 { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 10px; letter-spacing: 0.1em; }
+        .metric-card { background: white; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s; cursor: pointer; margin-bottom: 5px; }
+        .metric-card:hover { border-color: #2563eb; transform: translateY(-2px); }
+        .metric-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px; font-weight: 500; }
+        .metric-val { font-weight: 700; color: #0f172a; }
+        .scroll-box { max-height: 180px; overflow-y: auto; }
 
-        .btn-float { position: fixed; bottom: 30px; z-index: 2000; padding: 12px 24px; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-weight: 700; font-size: 12px; }
-        #uiToggle { left: 30px; background: #1e293b; color: white; }
+        .chart-container { height: 58vh; background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; position: relative; overflow: hidden; }
+        #controls { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+        .command-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        
+        .btn-float { position: fixed; bottom: 30px; z-index: 4000; padding: 14px 28px; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); font-weight: 700; font-size: 12px; transition: all 0.2s; }
+        #uiToggle { left: 30px; background: #0f172a; color: white; }
         #dashToggle { right: 30px; background: #2563eb; color: white; }
-
-        #controls { background: white; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
-        .command-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .panel { background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; }
-        label { font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px; }
-        select, input { padding: 9px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; width: 100%; box-sizing: border-box; background: white;}
-        
-        .btn { padding: 10px 16px; color: white; border: none; cursor: pointer; border-radius: 8px; font-weight: 600; font-size: 12px; }
-        .btn-purple { background: #7c3aed; }
-        .btn-orange { background: #f59e0b; }
-        .btn-green { background: #16a34a; }
-
-        .chart-container { height: 60vh; background: white; border-radius: 12px; border: 1px solid #cbd5e1; }
-        .controls-hidden #controls, .controls-hidden #statsBar { display: none; }
-        .controls-hidden .chart-container { height: 95vh; }
-
-        .headcount-badge { position: absolute; top: -12px; right: -12px; color: white; border-radius: 50%; min-width: 24px; height: 24px; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid white; z-index: 10; }
-        .perf-rating { font-size: 10px; font-weight: 800; padding: 2px 5px; border-radius: 4px; margin-left: 5px; }
+        .btn { padding: 10px 14px; color: white; border: none; cursor: pointer; border-radius: 8px; font-weight: 600; font-size: 11px; }
     </style>
 </head>
 <body id="mainBody">
 
 <button id="uiToggle" class="btn-float" onclick="toggleUI()">Show/Hide Controls</button>
-<button id="dashToggle" class="btn-float" onclick="toggleDashboard()">Executive Dashboard</button>
+<button id="dashToggle" class="btn-float" onclick="toggleDashboard()">Open Intelligence Dashboard</button>
 
-<div id="analyticsSidebar">
-    <button class="close-sidebar" onclick="toggleDashboard()">×</button>
-    <h2 style="margin-top:0">Executive Overview</h2>
-    <div id="dashboardContent">
-        <p style="color:#64748b; font-size:12px;">Waiting for data view...</p>
+<div id="analyticsDashboard">
+    <button class="close-dash" onclick="toggleDashboard()">Close Analysis</button>
+    <div class="dash-header">
+        <div>
+            <h1 style="margin:0; font-size:36px; letter-spacing:-0.03em; font-weight: 800;">Executive Intelligence</h1>
+            <p id="dashSubTitle" style="color:#64748b; font-weight:500; margin-top:5px;">Real-time Organizational Data</p>
+        </div>
+        <div style="display:flex; gap:12px; align-items: center; background: #f1f5f9; padding: 10px; border-radius: 16px;">
+            <select id="dashDeptFilter" onchange="applyDashFilter('dept')" style="width:200px;"><option value="">Filter by Dept...</option></select>
+            <select id="dashManagerFilter" onchange="applyDashFilter('team')" style="width:200px;"><option value="">Filter by Manager...</option></select>
+            <button class="btn" style="background:#0f172a;" onclick="resetFilter()">Reset View</button>
+        </div>
+    </div>
+
+    <div class="dash-grid">
+        <div class="analytics-column">
+            <div class="dashboard-section">
+                <div class="dashboard-h3">Financial Overview (Click to Drill)</div>
+                <div class="metric-card" onclick="setDrillDown('salary', null)">
+                    <div class="metric-row"><span>Base Payroll</span><span id="dashBasePay" class="metric-val">$0</span></div>
+                    <div class="metric-row"><span>Burdened Cost (1.19x)</span><span id="dashBurdenPay" class="metric-val">$0</span></div>
+                    <div class="metric-row"><span>Average Salary</span><span id="dashAvgPay" class="metric-val">$0</span></div>
+                </div>
+            </div>
+
+            <div class="dashboard-section">
+                <div class="dashboard-h3">Job Level Overview (Click to Drill)</div>
+                <div class="metric-card" id="tierList" onclick="setDrillDown('tier', null)"></div>
+            </div>
+
+            <div class="dashboard-section">
+                <div class="dashboard-h3">Performance Benchmark (Click to Drill)</div>
+                <div class="metric-card" id="perfList" onclick="setDrillDown('rating', null)"></div>
+            </div>
+
+            <div class="dashboard-section">
+                <div class="dashboard-h3">Organizational Health</div>
+                <div class="metric-card" style="cursor: default; border-left: 4px solid #10b981;">
+                    <div class="metric-row"><span>Avg Span of Control</span><span id="dashRatioVal" class="metric-val">0:1</span></div>
+                    <div class="metric-row"><span>Avg Tenure</span><span id="dashTenure" class="metric-val">0 Yrs</span></div>
+                    <div class="metric-row"><span>Rolling 12mo New Hires</span><span id="dashGrowth" class="metric-val">0</span></div>
+                </div>
+            </div>
+
+            <div class="dashboard-section">
+                <div class="dashboard-h3">Dept Scale (Click Row to Reset)</div>
+                <div class="metric-card scroll-box" id="deptList" onclick="setDrillDown('headcount', null)"></div>
+            </div>
+        </div>
+
+        <div class="chart-column">
+            <div class="dashboard-h3" id="mainChartTitle">Headcount Distribution</div>
+            <div style="height: 650px;"><canvas id="mainDashboardChart"></canvas></div>
+        </div>
     </div>
 </div>
 
 <div id="statsBar">
-    <div class="stat-item"><span class="stat-label">Headcount</span><span id="statHC" class="stat-value">0</span></div>
-    <div class="stat-item"><span class="stat-label">Avg. Span</span><span id="statRatio" class="stat-value">0:1</span></div>
-    <div class="stat-item"><span class="stat-label">Base Payroll</span><span id="statPayroll" class="stat-value">$0</span></div>
-    <div class="stat-item"><span class="stat-label">Burdened Cost (+19%)</span><span id="statBurden" class="stat-value">$0</span></div>
-    <div class="stat-item"><span class="stat-label">Status</span><span id="statStatus" style="color:#38bdf8; font-weight:800; font-size:20px;">Ready</span></div>
+    <div class="stat-item"><span class="stat-label">Total Headcount</span><span id="statHC" class="stat-value">0</span></div>
+    <div class="stat-item"><span class="stat-label">Span of Control</span><span id="statRatio" class="stat-value">0:1</span></div>
+    <div class="stat-item"><span class="stat-label">Global Payroll</span><span id="statPayroll" class="stat-value">$0</span></div>
+    <div class="stat-item"><span class="stat-label">Status</span><span id="statStatus" style="color:#38bdf8; font-weight:800;">Ready</span></div>
 </div>
 
 <div id="controls">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2 style="margin:0">HR Strategic Operating System</h2>
-        <div style="display:flex; gap:8px">
-            <input type="file" id="fileInput" accept=".csv" />
-            <button class="btn btn-green" onclick="downloadCSV()">Export CSV</button>
-            <button class="btn btn-gray" style="background:#475569; color:white; padding:10px 16px; border-radius:8px; border:none; cursor:pointer;" onclick="resetFilter()">Reset View</button>
-        </div>
-    </div>
-
-    <div class="command-grid">
+    <div class="command-row">
         <div class="panel">
-            <span style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase;">1. Filter View</span>
-            <div class="input-box" style="margin-top:10px">
-                <div style="flex:1"><label>Mode</label><select id="filterMode" onchange="toggleFilterFields()"><option value="none">Select...</option><option value="team">By Manager</option><option value="dept">By Department</option><option value="title">By Job Title</option></select></div>
-                <div id="filterInputContainer" style="display:none; flex:1"><label id="filterLabel">Value</label><input type="text" id="filterValue" list="dynamicList"></div>
-                <button class="btn btn-purple" id="filterBtn" style="display:none" onclick="runFilter()">Apply View</button>
+            <span class="stat-label" style="color:#64748b">1. Data Management</span>
+            <input type="file" id="fileInput" accept=".csv" />
+            <div style="display:flex; gap:8px; margin-top:10px;">
+                <button class="btn" style="background:#16a34a; flex:1" onclick="downloadCSV()">Export CSV</button>
+                <button class="btn" style="background:#64748b; flex:1" onclick="resetFilter()">Reset View</button>
             </div>
         </div>
         <div class="panel">
-            <span style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase;">2. Org Management</span>
-            <div class="input-box" style="margin-top:10px">
-                <div style="flex:1"><label>Action</label><select id="editMode" onchange="toggleEditFields()"><option value="none">Select...</option><option value="move">Update Manager</option><option value="deptUpdate">Update Dept</option><option value="bulk">Bulk Dept Change</option><option value="hire">Add Hire</option><option value="delete">Remove</option></select></div>
-                <div id="editTargetContainer" style="display:none; flex:1"><label id="editTargetLabel">Target</label><input type="text" id="editTarget" list="namesList"></div>
-                <div id="editExtraContainer" style="display:none; flex:1"><label id="editExtraLabel">Input</label><input type="text" id="editExtra"></div>
-                <button class="btn btn-orange" id="editBtn" style="display:none" onclick="runEdit()">Execute</button>
+            <span class="stat-label" style="color:#64748b">2. Organizational Filter</span>
+            <select id="filterMode" onchange="toggleFilterFields()">
+                <option value="none">Select Filter Type...</option>
+                <option value="team">By Manager</option>
+                <option value="dept">By Department</option>
+            </select>
+            <div id="filterInputContainer" style="display:none; margin-top:8px;">
+                <input type="text" id="filterValue" list="dynamicList" placeholder="Search...">
+                <button class="btn" style="background:#7c3aed; width:100%; margin-top:8px;" onclick="runFilter()">Update Chart</button>
+            </div>
+        </div>
+        <div class="panel">
+            <span class="stat-label" style="color:#64748b">3. Actions</span>
+            <select id="editMode" onchange="toggleEditFields()">
+                <option value="none">Select Action...</option>
+                <option value="move">Move Employee</option>
+            </select>
+            <div id="editFields" style="display:none; margin-top:8px;">
+                <input type="text" id="editTarget" list="namesList" placeholder="Target Name" style="margin-bottom:5px">
+                <input type="text" id="editExtra" placeholder="Destination">
+                <button class="btn" style="background:#f59e0b; width:100%; margin-top:8px;" onclick="runEdit()">Execute</button>
             </div>
         </div>
     </div>
 </div>
 
 <div class="chart-container"></div>
-<datalist id="namesList"></datalist><datalist id="deptsList"></datalist><datalist id="titlesList"></datalist><datalist id="dynamicList"></datalist>
+<datalist id="namesList"></datalist><datalist id="deptsList"></datalist><datalist id="dynamicList"></datalist>
 
 <script>
+    Chart.register(ChartDataLabels);
     let chart = new d3.OrgChart().container('.chart-container');
-    let allData = [];
-    let currentViewData = [];
-    let deptColors = {};
+    let allData = [], currentViewData = [], deptColors = {}, mainChartInstance = null;
+    let currentDrillMode = 'headcount', currentDrillTarget = null;
     const colorPalette = ['#2563eb', '#16a34a', '#dc2626', '#f59e0b', '#7c3aed', '#db2777', '#0891b2', '#ea580c', '#65a30d', '#4f46e5'];
 
     function toggleUI() { document.getElementById('mainBody').classList.toggle('controls-hidden'); setTimeout(() => { if(allData.length > 0) chart.render().fit(); }, 350); }
-    function toggleDashboard() { document.getElementById('analyticsSidebar').classList.toggle('open'); }
+    function toggleDashboard() { document.getElementById('analyticsDashboard').classList.toggle('open'); }
+
+    function parseCSVRobust(text) {
+        const result = []; let row = ['']; let inQuotes = false; let i = 0;
+        text = text.replace(/^\uFEFF/, "");
+        while (i < text.length) {
+            let char = text[i]; let next = text[i+1];
+            if (char === '"') { if (inQuotes && next === '"') { row[row.length-1] += '"'; i++; } else { inQuotes = !inQuotes; } }
+            else if (char === ',' && !inQuotes) { row.push(''); }
+            else if ((char === '\r' || char === '\n') && !inQuotes) { if (row.length > 1 || row[0] !== '') result.push(row); row = ['']; if (char === '\r' && next === '\n') i++; }
+            else { row[row.length-1] += char; }
+            i++;
+        }
+        if (row.length > 1 || row[0] !== '') result.push(row);
+        return result;
+    }
 
     function cleanSalary(val) { if (!val) return 0; return parseFloat(String(val).replace(/[$,]/g, "")) || 0; }
-    function parseRating(val) { if (!val || String(val).trim() === "") return "NR"; let m = String(val).match(/\d/); return m ? parseInt(m[0]) : "NR"; }
-
-    function categorizeLevel(lv) {
-        if (!lv || lv.trim() === "") return "Unassigned";
-        const l = lv.toUpperCase();
-        if (l.startsWith("C") || l.includes("CHIEF") || l.includes("CEO")) return "C-Level";
-        if (l.startsWith("VP") || l.includes("VICE PRESIDENT")) return "VP";
-        if (l.startsWith("M") || l.includes("MANAGER") || l.includes("DIRECTOR") || l.includes("HEAD")) return "M";
-        if (l.startsWith("IC") || l.includes("CONTRIBUTOR") || l.includes("ASSOCIATE") || l.includes("ANALYST") || l.includes("ENGINEER")) return "IC";
-        return "IC";
+    function parseRating(val) { if (!val || String(val).trim() === "" || String(val) === "NaN") return "NR"; let m = String(val).match(/\d/); return m ? parseInt(m[0]) : "NR"; }
+    
+    function getStrategicGroup(row) {
+        const lv = (row.jobLevel || "").trim().toUpperCase();
+        if (lv === "C-LEVEL") return "C-Level";
+        if (lv.startsWith("VP")) return "VP";
+        if (lv.startsWith("M")) return "People Managers";
+        if (lv.startsWith("IC")) return "Individual Contributors";
+        return "Unassigned";
     }
 
-    function toggleFilterFields() {
-        const mode = document.getElementById('filterMode').value;
-        const cont = document.getElementById('filterInputContainer'), btn = document.getElementById('filterBtn'), input = document.getElementById('filterValue'), label = document.getElementById('filterLabel');
-        if (mode === 'none') { cont.style.display = 'none'; btn.style.display = 'none'; return; }
-        cont.style.display = 'block'; btn.style.display = 'block'; input.value = "";
-        if (mode === 'team') { label.innerText = "Manager Name"; input.setAttribute('list', 'namesList'); }
-        else if (mode === 'dept') { label.innerText = "Department"; input.setAttribute('list', 'deptsList'); }
-        else if (mode === 'title') { label.innerText = "Job Title"; input.setAttribute('list', 'titlesList'); }
+    function setDrillDown(mode, target) {
+        currentDrillMode = mode;
+        currentDrillTarget = target;
+        updateDashboardStats(currentViewData);
     }
 
-    function toggleEditFields() {
-        const mode = document.getElementById('editMode').value;
-        const tCont = document.getElementById('editTargetContainer'), eCont = document.getElementById('editExtraContainer'), btn = document.getElementById('editBtn'), eInput = document.getElementById('editExtra'), tInput = document.getElementById('editTarget');
-        tCont.style.display = 'none'; eCont.style.display = 'none'; btn.style.display = 'none';
-        if (mode === 'none') return;
-        btn.style.display = 'block'; tInput.setAttribute('list', 'namesList'); eInput.setAttribute('list', 'namesList');
-        if (mode === 'move') { tCont.style.display = 'block'; eCont.style.display = 'block'; document.getElementById('editTargetLabel').innerText = "Employee"; document.getElementById('editExtraLabel').innerText = "New Manager"; }
-        else if (mode === 'deptUpdate') { tCont.style.display = 'block'; eCont.style.display = 'block'; document.getElementById('editTargetLabel').innerText = "Employee"; document.getElementById('editExtraLabel').innerText = "New Dept"; eInput.setAttribute('list', 'deptsList'); }
-        else if (mode === 'bulk') { eCont.style.display = 'block'; document.getElementById('editExtraLabel').innerText = "New Dept for View"; eInput.setAttribute('list', 'deptsList'); }
-        else if (mode === 'hire') { tCont.style.display = 'block'; eCont.style.display = 'block'; document.getElementById('editTargetLabel').innerText = "New Name"; document.getElementById('editExtraLabel').innerText = "Manager"; tInput.removeAttribute('list'); }
-        else if (mode === 'delete') { tCont.style.display = 'block'; document.getElementById('editTargetLabel').innerText = "Employee"; }
+    function toggleFilterFields() { document.getElementById('filterInputContainer').style.display = (document.getElementById('filterMode').value === 'none') ? 'none' : 'block'; }
+    function toggleEditFields() { document.getElementById('editFields').style.display = (document.getElementById('editMode').value === 'none') ? 'none' : 'block'; }
+
+    function applyDashFilter(mode) {
+        const val = document.getElementById(mode === 'dept' ? 'dashDeptFilter' : 'dashManagerFilter').value;
+        if (!val) return;
+        document.getElementById('filterValue').value = val;
+        document.getElementById('filterMode').value = (mode === 'dept') ? 'dept' : 'team';
+        runFilter();
     }
 
     function runFilter() {
@@ -168,92 +227,117 @@
             function getChildren(id) { allData.forEach(d => { if (d.parentId === id) { descendants.push(d); getChildren(d.id); } }); }
             getChildren(val);
             currentViewData = JSON.parse(JSON.stringify(descendants));
-            const viewRoot = currentViewData.find(d => d.id === val);
-            if(viewRoot) viewRoot.parentId = null;
+            currentViewData.find(d => d.id === val).parentId = null;
         } else {
-            currentViewData = JSON.parse(JSON.stringify(allData.filter(d => (mode === 'dept' ? d.department : d.title) === val)));
+            currentViewData = JSON.parse(JSON.stringify(allData.filter(d => d.department === val)));
             const names = new Set(currentViewData.map(d => d.id));
             currentViewData.forEach(d => { if (!names.has(d.parentId)) d.parentId = "VIEW_ROOT"; });
-            currentViewData.push({ id: "VIEW_ROOT", name: val + " View", isGhost: true, parentId: null });
+            currentViewData.push({ id: "VIEW_ROOT", name: val, isGhost: true, parentId: null });
         }
-        document.getElementById('statStatus').innerText = "Filtered";
-        refresh();
-    }
-
-    function runEdit() {
-        const mode = document.getElementById('editMode').value, target = document.getElementById('editTarget').value, extra = document.getElementById('editExtra').value;
-        if (mode === 'move') { const emp = allData.find(d => d.id === target); if (emp) emp.parentId = extra; }
-        else if (mode === 'deptUpdate') { const emp = allData.find(d => d.id === target); if (emp) emp.department = extra; }
-        else if (mode === 'bulk') { const visibleIds = new Set(currentViewData.filter(d => !d.isGhost).map(d => d.id)); allData.forEach(d => { if (visibleIds.has(d.id)) d.department = extra; }); }
-        else if (mode === 'hire') { const man = allData.find(d => d.id === extra); allData.push({ id: target, name: target, parentId: extra, title: "New Hire", department: man ? man.department : "", salary: 0 }); }
-        else if (mode === 'delete') { const p = allData.find(d => d.id === target); if (p && confirm(`Delete ${target}?`)) { allData.forEach(d => { if (d.parentId === target) d.parentId = p.parentId; }); allData = allData.filter(d => d.id !== target); } }
-        updateDeptColors(allData); resetFilter();
+        document.getElementById('statStatus').innerText = "Filtered View";
+        refresh(true);
     }
 
     function updateDashboardStats(data) {
         const real = data.filter(d => !d.isGhost);
-        if (real.length === 0) return document.getElementById('dashboardContent').innerHTML = "<p>No data.</p>";
+        if (real.length === 0) return;
         
         const totalPayroll = real.reduce((acc, d) => acc + cleanSalary(d.salary), 0);
-        const burdenedPayroll = totalPayroll * 1.19;
-        const avgSalary = totalPayroll / real.length;
+        const setEl = (id, val) => { if(document.getElementById(id)) document.getElementById(id).innerText = val; };
+        setEl('dashBasePay', "$" + Math.round(totalPayroll).toLocaleString());
+        setEl('dashBurdenPay', "$" + Math.round(totalPayroll * 1.19).toLocaleString());
+        setEl('dashAvgPay', "$" + Math.round(totalPayroll / real.length).toLocaleString());
         
-        const ratings = { 5:0, 4:0, 3:0, 2:0, 1:0, "NR":0 };
-        real.forEach(d => { let r = parseRating(d.rating); ratings[r]++; });
+        // 1. Job Level Overview
+        const groups = { "C-Level": 0, "VP": 0, "People Managers": 0, "Individual Contributors": 0, "Unassigned": 0 };
+        real.forEach(d => { groups[getStrategicGroup(d)]++; });
+        document.getElementById('tierList').innerHTML = ["C-Level", "VP", "People Managers", "Individual Contributors", "Unassigned"]
+            .map(k => `<div class="metric-row"><span>${k}</span><span class="metric-val">${groups[k]}</span></div>`).join('');
 
-        const levels = { "C-Level": 0, "VP": 0, "M": 0, "IC": 0, "Unassigned": 0 };
-        real.forEach(d => { levels[categorizeLevel(d.jobLevel)]++; });
+        // 2. Performance Overview
+        const ratings = { 5:0, 4:0, 3:0, 2:0, 1:0, "NR": 0 };
+        real.forEach(d => { let r = parseRating(d.rating); if(ratings[r] !== undefined) ratings[r]++; });
+        document.getElementById('perfList').innerHTML = [5,4,3,2,1,"NR"].map(r => `<div class="metric-row"><span>Rating ${r}</span><span class="metric-val">${ratings[r]}</span></div>`).join('');
 
-        const deptStats = {};
-        real.forEach(d => { const dept = d.department || "Unassigned"; deptStats[dept] = (deptStats[dept] || 0) + 1; });
-        const sortedDepts = Object.entries(deptStats).sort((a,b) => b[1] - a[1]);
+        // 3. Dept Distribution
+        const dStats = {};
+        real.forEach(d => { dStats[d.department] = (dStats[d.department] || 0) + 1; });
+        document.getElementById('deptList').innerHTML = Object.entries(dStats).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `<div class="metric-row"><span>${k}</span><span class="metric-val">${v}</span></div>`).join('');
 
-        const now = new Date();
-        const avgTenure = real.reduce((acc, d) => {
-            const start = new Date(d.startDate);
-            return acc + (isNaN(start) ? 0 : (now - start) / (1000 * 60 * 60 * 24 * 365.25));
-        }, 0) / real.length;
-
-        // UI Updates for Stats Bar
-        document.getElementById('statHC').innerText = real.length;
-        document.getElementById('statPayroll').innerText = "$" + Math.round(totalPayroll).toLocaleString();
-        document.getElementById('statBurden').innerText = "$" + Math.round(burdenedPayroll).toLocaleString();
+        // 4. RESTORED: Health Metrics Logic
         const managers = new Set(real.map(d => d.parentId).filter(p => p && p !== 'ROOT' && p !== 'VIEW_ROOT'));
-        document.getElementById('statRatio').innerText = (managers.size > 0 ? ((real.length - 1) / managers.size).toFixed(1) : 0) + ":1";
+        const ratio = (managers.size > 0 ? ((real.length - 1) / managers.size).toFixed(1) : 0);
+        setEl('dashRatioVal', ratio + ":1");
+        
+        // Tenure Calculation
+        const avgTenure = real.reduce((acc, d) => {
+            const sd = new Date(d.startDate);
+            return acc + (isNaN(sd) ? 0 : (new Date() - sd) / (1000 * 60 * 60 * 24 * 365.25));
+        }, 0) / real.length;
+        setEl('dashTenure', avgTenure.toFixed(1) + " Yrs");
 
-        // Dashboard HTML
-        document.getElementById('dashboardContent').innerHTML = `
-            <div class="dashboard-section">
-                <div class="dashboard-h3">View Financials</div>
-                <div class="metric-row"><span>Base Payroll</span><span class="metric-val">$${Math.round(totalPayroll).toLocaleString()}</span></div>
-                <div class="metric-row"><span>Fully Burdened (1.19x)</span><span class="metric-val">$${Math.round(burdenedPayroll).toLocaleString()}</span></div>
-                <div class="metric-row"><span>Avg. Base Salary</span><span class="metric-val">$${Math.round(avgSalary).toLocaleString()}</span></div>
-            </div>
-            <div class="dashboard-section">
-                <div class="dashboard-h3">Department Overview</div>
-                ${sortedDepts.map(([name, count]) => `
-                    <div class="metric-row">
-                        <span>${name}</span>
-                        <span class="metric-val">${count} employees</span>
-                    </div>`).join('')}
-            </div>
-            <div class="dashboard-section">
-                <div class="dashboard-h3">Job Level Analysis</div>
-                <div class="metric-row"><span>C-Level</span><span class="metric-val">${levels["C-Level"]}</span></div>
-                <div class="metric-row"><span>VP</span><span class="metric-val">${levels["VP"]}</span></div>
-                <div class="metric-row"><span>M (Manager/Director)</span><span class="metric-val">${levels["M"]}</span></div>
-                <div class="metric-row"><span>IC (Individual Contributor)</span><span class="metric-val">${levels["IC"]}</span></div>
-            </div>
-            <div class="dashboard-section">
-                <div class="dashboard-h3">Performance Density</div>
-                ${[5,4,3,2,1].map(r => `<div class="metric-row"><span>Rating ${r}</span><span class="metric-val">${ratings[r]} employees</span></div>`).join('')}
-                <div class="metric-row"><span>Not Yet Rated</span><span class="metric-val">${ratings["NR"]} employees</span></div>
-            </div>
-            <div class="dashboard-section">
-                <div class="dashboard-h3">Tenure</div>
-                <div class="metric-row"><span>Avg. Tenure</span><span class="metric-val">${avgTenure.toFixed(1)} years</span></div>
-            </div>
-        `;
+        // Rolling 12mo New Hires
+        const twelveMonthsAgo = new Date(); twelveMonthsAgo.setFullYear(twelveMonthsAgo.getFullYear() - 1);
+        const growthCount = real.filter(d => {
+            const sd = new Date(d.startDate);
+            return sd >= twelveMonthsAgo && sd <= new Date();
+        }).length;
+        setEl('dashGrowth', growthCount);
+
+        // --- Chart Logic ---
+        const allReal = allData.filter(d => !d.isGhost);
+        const deptNames = [...new Set(allReal.map(d => d.department))].sort();
+        let chartData = [], chartLabels = [], chartTitle = "Analysis", chartType = 'bar', chartBgColors = '#2563eb';
+
+        if (currentDrillMode === 'rating') {
+            chartType = 'pie'; chartLabels = ["Rating 5", "Rating 4", "Rating 3", "Rating 2", "Rating 1", "NR"];
+            chartData = [ratings[5], ratings[4], ratings[3], ratings[2], ratings[1], ratings["NR"]];
+            chartTitle = "Performance Curve (%)";
+            chartBgColors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#7f1d1d', '#94a3b8'];
+        } else if (currentDrillMode === 'tier') {
+            chartLabels = ["C-Level", "VP", "People Managers", "Individual Contributors"];
+            chartData = chartLabels.map(l => groups[l]); chartTitle = "Strategic Tiering (%)";
+            chartBgColors = ['#0f172a', '#2563eb', '#38bdf8', '#94a3b8'];
+        } else if (currentDrillMode === 'salary') {
+            chartLabels = deptNames;
+            chartData = deptNames.map(dept => {
+                const emps = allReal.filter(d => d.department === dept);
+                return emps.length ? Math.round(emps.reduce((a,b) => a + cleanSalary(b.salary), 0) / emps.length) : 0;
+            });
+            chartTitle = "Avg Salary by Dept";
+        } else {
+            chartLabels = deptNames; chartData = deptNames.map(dept => allReal.filter(d => d.department === dept).length);
+            chartTitle = "Headcount Distribution (%)";
+        }
+
+        setEl('mainChartTitle', chartTitle);
+        if (mainChartInstance) mainChartInstance.destroy();
+        mainChartInstance = new Chart(document.getElementById('mainDashboardChart'), {
+            type: chartType,
+            data: { labels: chartLabels, datasets: [{ data: chartData, backgroundColor: chartType === 'bar' ? '#2563eb' : chartBgColors, borderRadius: 6 }] },
+            options: { 
+                plugins: { 
+                    legend: { display: chartType === 'pie', position: 'bottom' },
+                    datalabels: {
+                        color: chartType === 'pie' ? '#fff' : '#0f172a',
+                        font: { weight: '800', size: 10 },
+                        formatter: (value, ctx) => {
+                            if (value === 0) return '';
+                            let sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            let percentage = ((value / sum) * 100).toFixed(1) + "%";
+                            return currentDrillMode === 'salary' ? "$" + value.toLocaleString() : value + " (" + percentage + ")";
+                        }
+                    }
+                }, 
+                responsive: true, maintainAspectRatio: false,
+                scales: chartType === 'bar' ? { y: { beginAtZero: true } } : { x: { display: false }, y: { display: false } }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+        setEl('statHC', real.length);
+        setEl('statPayroll', "$" + Math.round(totalPayroll).toLocaleString());
+        setEl('statRatio', ratio + ":1");
     }
 
     function calculateHeadcounts(data) {
@@ -262,94 +346,67 @@
         updateDashboardStats(data);
     }
 
-    function updateDeptColors(data) {
-        const depts = [...new Set(data.filter(d => d.department).map(d => d.department))];
-        depts.forEach((d, i) => { deptColors[d] = colorPalette[i % colorPalette.length]; });
+    function resetFilter() { 
+        if (allData.length === 0) return; 
+        document.getElementById('statStatus').innerText = "Full Org"; 
+        document.getElementById('filterValue').value = "";
+        document.getElementById('dashDeptFilter').value = "";
+        document.getElementById('dashManagerFilter').value = "";
+        currentDrillMode = 'headcount'; currentViewData = JSON.parse(JSON.stringify(allData)); 
+        refresh(true); 
     }
 
-    function resetFilter() { if (allData.length === 0) return; document.getElementById('statStatus').innerText = "Full Org"; currentViewData = JSON.parse(JSON.stringify(allData)); refresh(); }
-
-    function refresh() {
+    function refresh(fitView = false) {
         if (currentViewData.length === 0) return;
         calculateHeadcounts(currentViewData);
         updateAutocomplete();
-        chart.data(currentViewData).nodeContent(d => {
-            if (d.data.isGhost) return `<div style="display:none"></div>`;
-            const count = d.data._totalHeadcount;
-            const badgeColor = count > 8 ? '#dc2626' : '#1e293b';
-            const badge = count > 0 ? `<div class="headcount-badge" style="background:${badgeColor}">${count}</div>` : '';
-            const r = parseRating(d.data.rating);
-            const rColor = r === "NR" ? "#94a3b8" : (r >= 4 ? '#16a34a' : (r <= 2 ? '#dc2626' : '#64748b'));
+        chart.data(currentViewData).nodeWidth(d => 220).nodeHeight(d => 90).compact(true).nodeContent(d => {
+            if (d.data.isGhost) return `<div style="padding:15px; background:#0f172a; color:white; border-radius:12px; text-align:center;"><div style="font-weight:800; font-size:14px;">${d.data.name}</div></div>`;
             const boxColor = deptColors[d.data.department] || '#cbd5e1';
-
-            return `<div style="position:relative; padding:12px; background:white; border-left: 6px solid ${boxColor}; border-radius:8px; height:76px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                ${badge}
-                <div style="font-weight:700; font-size:13px; color:#1e293b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.data.name}</div>
-                <div style="font-size:11px; color:#64748b; margin-top:2px;">${d.data.title}</div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-                    <div style="font-size:10px; color:${boxColor}; background:${boxColor}15; padding:2px 6px; border-radius:4px; font-weight:bold;">${d.data.department}</div>
-                    <div style="display:flex; align-items:center;">
-                        <span style="font-size:9px; color:#94a3b8; font-weight:bold;">${d.data.jobLevel}</span>
-                        ${r !== "NR" ? `<span class="perf-rating" style="background:${rColor}15; color:${rColor}">${r}★</span>` : ''}
-                    </div>
+            return `<div style="position:relative; padding:12px; background:white; border-left: 6px solid ${boxColor}; border-radius:12px; height:66px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                ${d.data._totalHeadcount > 0 ? `<div style="position:absolute; top:-10px; right:-10px; background:#0f172a; color:white; border-radius:50%; min-width:20px; height:20px; font-size:10px; display:flex; align-items:center; justify-content:center; border:2px solid white;">${d.data._totalHeadcount}</div>` : ''}
+                <div style="font-weight:700; font-size:12px; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.data.name}</div>
+                <div style="font-size:10px; color:#64748b; margin-top:2px;">${d.data.title}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                    <div style="font-size:9px; color:${boxColor}; background:${boxColor}15; padding:2px 6px; border-radius:6px; font-weight:800;">${d.data.department}</div>
+                    <span style="font-size:9px; color:#94a3b8; font-weight:800;">${d.data.jobLevel}</span>
                 </div>
             </div>`;
-        }).render().fit();
+        }).render();
+        if (fitView) chart.fit().zoomLevel(0.8);
     }
 
     function updateAutocomplete() {
-        const nL = document.getElementById('namesList'), dL = document.getElementById('deptsList'), tL = document.getElementById('titlesList');
-        const depts = new Set(), titles = new Set();
-        nL.innerHTML = ""; dL.innerHTML = ""; tL.innerHTML = "";
+        const dDF = document.getElementById('dashDeptFilter'), dMF = document.getElementById('dashManagerFilter');
+        const depts = new Set(), managers = new Set();
         allData.filter(d => !d.isGhost).forEach(d => {
-            const o = document.createElement('option'); o.value = d.name; nL.appendChild(o);
-            if (d.department) depts.add(d.department); if (d.title) titles.add(d.title);
+            if (d.department) depts.add(d.department);
+            if (d._totalHeadcount > 0) managers.add(d.name);
         });
-        depts.forEach(d => { const o = document.createElement('option'); o.value = d; dL.appendChild(o); });
-        titles.forEach(t => { const o = document.createElement('option'); o.value = t; tL.appendChild(o); });
-    }
-
-    function parseCSV(text) {
-        const rows = []; let cur = []; let field = ''; let inQ = false;
-        for (let i = 0; i < text.length; i++) {
-            let c = text[i];
-            if (c === '"' && inQ && text[i+1] === '"') { field += '"'; i++; }
-            else if (c === '"') inQ = !inQ;
-            else if (c === ',' && !inQ) { cur.push(field.trim()); field = ''; }
-            else if ((c === '\n' || c === '\r') && !inQ) { if (field || cur.length > 0) { cur.push(field.trim()); rows.push(cur); } cur = []; field = ''; } else field += c;
+        if (dDF.options.length <= 1) {
+            depts.forEach(d => { const o = document.createElement('option'); o.value = d; o.innerText = d; dDF.appendChild(o); });
+            managers.forEach(m => { const o = document.createElement('option'); o.value = m; o.innerText = m; dMF.appendChild(o); });
         }
-        if (field || cur.length > 0) { cur.push(field.trim()); rows.push(cur); } return rows;
     }
 
-    function downloadCSV() {
-        let csv = "Full Name,Title,Manager (name),Department,Salary,Gender,2025 Mid-Year Rating,Job Level,Start Date\n";
-        allData.filter(d => !d.isGhost).forEach(d => { csv += `"${d.name}","${d.title}","${d.parentId === 'ROOT' ? '' : d.parentId}","${d.department}","${d.salary}","${d.gender}","${d.rating}","${d.jobLevel}","${d.startDate}"\n`; });
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'org_executive_export.csv'; a.click();
-    }
+    function updateDeptColors(data) { const depts = [...new Set(data.filter(d => d.department).map(d => d.department))]; depts.forEach((d, i) => { deptColors[d] = colorPalette[i % colorPalette.length]; }); }
 
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const reader = new FileReader();
         reader.onload = function(event) {
-            const rows = parseCSV(event.target.result), headers = rows[0].map(h => h.trim().toLowerCase());
-            const idxFull = headers.indexOf('full name'), idxTitle = headers.indexOf('title'), idxMan = headers.indexOf('manager (name)'), idxDept = headers.indexOf('department'), idxSal = headers.indexOf('salary'), idxGen = headers.indexOf('gender'), idxRat = headers.indexOf('2025 mid-year rating'), idxLev = headers.indexOf('job level'), idxDate = headers.indexOf('start date');
-
+            const rows = parseCSVRobust(event.target.result);
+            const headers = rows[0].map(h => h.trim().toLowerCase());
+            const idxFull = headers.indexOf('full name'), idxTitle = headers.indexOf('title'), idxMan = headers.indexOf('manager (name)'), idxDept = headers.indexOf('department'), idxSal = headers.indexOf('salary'), idxRat = headers.indexOf('2025 mid-year rating'), idxLev = headers.indexOf('job level'), idxDate = headers.indexOf('start date');
+            
             allData = rows.slice(1).filter(c => c[idxFull]).map(c => ({
-                id: c[idxFull].trim(), name: c[idxFull].trim(), 
-                title: idxTitle !== -1 ? c[idxTitle] : "", 
-                parentId: (idxMan !== -1 && c[idxMan]) ? c[idxMan].trim() : "ROOT", 
-                department: idxDept !== -1 ? c[idxDept] : "",
-                salary: idxSal !== -1 ? c[idxSal] : 0, 
-                gender: idxGen !== -1 ? c[idxGen] : "N/A", 
-                rating: idxRat !== -1 ? c[idxRat] : null, 
-                jobLevel: idxLev !== -1 ? c[idxLev] : "", 
-                startDate: idxDate !== -1 ? c[idxDate] : ""
+                id: c[idxFull].trim(), name: c[idxFull].trim(), title: idxTitle !== -1 ? c[idxTitle] : "", parentId: (idxMan !== -1 && c[idxMan]) ? c[idxMan].trim() : "ROOT", department: idxDept !== -1 ? c[idxDept].trim() : "Unassigned",
+                salary: idxSal !== -1 ? c[idxSal] : 0, rating: idxRat !== -1 ? c[idxRat] : null, jobLevel: idxLev !== -1 ? c[idxLev] : "", startDate: idxDate !== -1 ? c[idxDate] : ""
             }));
             const names = new Set(allData.map(d => d.id));
             allData.forEach(d => { if (d.parentId !== "ROOT" && !names.has(d.parentId)) d.parentId = "ROOT"; });
-            allData.push({ id: "ROOT", name: "Company", isGhost: true, parentId: null });
-            updateDeptColors(allData);
-            chart.nodeWidth(d => 220).nodeHeight(d => 100).compact(true);
+            allData.push({ id: "ROOT", name: "Organization", isGhost: true, parentId: null });
+            const depts = [...new Set(allData.filter(d => d.department).map(d => d.department))];
+            depts.forEach((d, i) => { deptColors[d] = colorPalette[i % colorPalette.length]; });
             resetFilter();
         };
         reader.readAsText(e.target.files[0]);
