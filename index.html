@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>HR Executive Intelligence - Health & Growth BI</title>
+    <title>HR Executive Intelligence - Spotlight Fixed</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-org-chart@2.6.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-flextree@2.1.2/build/d3-flextree.js"></script>
@@ -23,96 +23,91 @@
         .stat-value { font-size: 18px; font-weight: 800; color: #38bdf8; }
         .stat-label { font-size: 9px; text-transform: uppercase; opacity: 0.6; font-weight: 700; letter-spacing: 0.05em; }
 
+        /* Spotlight Popup - MOVED TO BOTTOM LEFT */
+        #employeeSpotlight {
+            position: fixed; bottom: 30px; left: 30px; width: 340px;
+            background: white; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            z-index: 100000; padding: 28px; border: 2px solid #2563eb;
+            display: none; animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .spotlight-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .spotlight-name { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0; }
+        .spotlight-close { background: #f1f5f9; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; color: #0f172a; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+        .spotlight-label { font-size: 10px; text-transform: uppercase; color: #94a3b8; font-weight: 800; margin-top: 14px; display: block; }
+        .spotlight-value { font-size: 14px; color: #334155; font-weight: 600; margin-top: 2px; }
+
+        /* Dashboard */
         #analyticsDashboard {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #ffffff; z-index: 6000; padding: 40px 60px; box-sizing: border-box;
+            background: #ffffff; z-index: 8000; padding: 40px 60px; box-sizing: border-box;
             transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            transform: translateY(100%); overflow-y: auto;
+            transform: translateY(100%); overflow-y: auto; visibility: hidden;
         }
-        #analyticsDashboard.open { transform: translateY(0); }
-        .close-dash { position: fixed; top: 30px; right: 40px; padding: 10px 24px; background: #0f172a; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 800; z-index: 6001; }
+        #analyticsDashboard.open { transform: translateY(0); visibility: visible; }
+        .close-dash { position: fixed; top: 30px; right: 40px; padding: 10px 24px; background: #0f172a; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 800; z-index: 8001; }
         
-        .dash-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; }
         .dash-grid { display: grid; grid-template-columns: 380px 1fr; gap: 50px; }
-        .analytics-column { display: flex; flex-direction: column; gap: 20px; }
-        .chart-column { background: #f8fafc; padding: 30px; border-radius: 24px; border: 1px solid #e2e8f0; }
-        
-        .dashboard-h3 { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 10px; letter-spacing: 0.1em; }
-        .metric-card { background: white; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s; cursor: pointer; margin-bottom: 5px; }
+        .chart-column { background: #0f172a; padding: 30px; border-radius: 24px; }
+        .metric-card { background: white; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s; margin-bottom: 12px; }
         .metric-card:hover { border-color: #2563eb; transform: translateY(-2px); }
-        .metric-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px; font-weight: 500; }
-        .metric-val { font-weight: 700; color: #0f172a; }
+        .metric-row { display: flex; justify-content: space-between; font-size: 13px; }
         .scroll-box { max-height: 180px; overflow-y: auto; }
+        .dashboard-h3 { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px; letter-spacing: 0.1em; }
 
-        .chart-container { height: 58vh; background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; position: relative; overflow: hidden; }
-        #controls { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
-        .command-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .chart-container { height: 65vh; background: #ffffff; border-radius: 20px 20px 0 0; border: 1px solid #e2e8f0; border-bottom: none; position: relative; overflow: hidden; }
         
-        .btn-float { position: fixed; bottom: 30px; z-index: 4000; padding: 14px 28px; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); font-weight: 700; font-size: 12px; transition: all 0.2s; }
+        #controls { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 20px; display: block; }
+        .body-controls-hidden #controls, .body-controls-hidden #statsBar { display: none !important; }
+        .body-controls-hidden .chart-container { height: 95vh; }
+
+        .command-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .panel { background: #f8fafc; padding: 15px; border-radius: 12px; }
+        .btn-float { position: fixed; bottom: 30px; z-index: 7000; padding: 14px 28px; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); font-weight: 700; font-size: 12px; transition: all 0.2s; }
         #uiToggle { left: 30px; background: #0f172a; color: white; }
         #dashToggle { right: 30px; background: #2563eb; color: white; }
         .btn { padding: 10px 14px; color: white; border: none; cursor: pointer; border-radius: 8px; font-weight: 600; font-size: 11px; }
+        select, input { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px; width: 100%; background: white; margin-top: 5px; }
     </style>
 </head>
 <body id="mainBody">
 
+<div id="employeeSpotlight">
+    <div class="spotlight-header">
+        <h3 id="spotName" class="spotlight-name">-</h3>
+        <button class="spotlight-close" onclick="closeSpotlight()">×</button>
+    </div>
+    <span class="spotlight-label">Title</span><div id="spotTitle" class="spotlight-value">-</div>
+    <span class="spotlight-label">Manager</span><div id="spotManager" class="spotlight-value">-</div>
+    <span class="spotlight-label">Location</span><div id="spotLocation" class="spotlight-value">-</div>
+    <span class="spotlight-label">Department</span><div id="spotDept" class="spotlight-value">-</div>
+    <span class="spotlight-label">Tenure</span><div id="spotTenure" class="spotlight-value">-</div>
+    <span class="spotlight-label">Work Email</span><div id="spotEmail" class="spotlight-value" style="color:#2563eb;">-</div>
+</div>
+
 <button id="uiToggle" class="btn-float" onclick="toggleUI()">Show/Hide Controls</button>
-<button id="dashToggle" class="btn-float" onclick="toggleDashboard()">Open Intelligence Dashboard</button>
+<button id="dashToggle" class="btn-float" onclick="toggleDashboard()">Executive Dashboard</button>
 
 <div id="analyticsDashboard">
-    <button class="close-dash" onclick="toggleDashboard()">Close Analysis</button>
+    <button class="close-dash" onclick="toggleDashboard()">Close Dashboard</button>
     <div class="dash-header">
-        <div>
-            <h1 style="margin:0; font-size:36px; letter-spacing:-0.03em; font-weight: 800;">Executive Intelligence</h1>
-            <p id="dashSubTitle" style="color:#64748b; font-weight:500; margin-top:5px;">Real-time Organizational Data</p>
-        </div>
-        <div style="display:flex; gap:12px; align-items: center; background: #f1f5f9; padding: 10px; border-radius: 16px;">
-            <select id="dashDeptFilter" onchange="applyDashFilter('dept')" style="width:200px;"><option value="">Filter by Dept...</option></select>
-            <select id="dashManagerFilter" onchange="applyDashFilter('team')" style="width:200px;"><option value="">Filter by Manager...</option></select>
-            <button class="btn" style="background:#0f172a;" onclick="resetFilter()">Reset View</button>
+        <div><h1 style="margin:0; font-size:36px; font-weight:800; color: #0f172a;">Executive Intelligence</h1><p id="dashSubTitle" style="color:#64748b; margin-top:5px;">Live Organizational Data</p></div>
+        <div style="display:flex; gap:12px; align-items:center; background:#f1f5f9; padding:10px; border-radius:16px;">
+            <select id="dashDeptFilter" onchange="applyDashFilter('dept')"><option value="">Filter by Dept...</option></select>
+            <select id="dashManagerFilter" onchange="applyDashFilter('team')"><option value="">Filter by Manager...</option></select>
+            <button class="btn" style="background:#0f172a;" onclick="resetFilter()">Reset All</button>
         </div>
     </div>
 
     <div class="dash-grid">
         <div class="analytics-column">
-            <div class="dashboard-section">
-                <div class="dashboard-h3">Financial Overview (Click to Drill)</div>
-                <div class="metric-card" onclick="setDrillDown('salary', null)">
-                    <div class="metric-row"><span>Base Payroll</span><span id="dashBasePay" class="metric-val">$0</span></div>
-                    <div class="metric-row"><span>Burdened Cost (1.19x)</span><span id="dashBurdenPay" class="metric-val">$0</span></div>
-                    <div class="metric-row"><span>Average Salary</span><span id="dashAvgPay" class="metric-val">$0</span></div>
-                </div>
-            </div>
-
-            <div class="dashboard-section">
-                <div class="dashboard-h3">Job Level Overview (Click to Drill)</div>
-                <div class="metric-card" id="tierList" onclick="setDrillDown('tier', null)"></div>
-            </div>
-
-            <div class="dashboard-section">
-                <div class="dashboard-h3">Performance Benchmark (Click to Drill)</div>
-                <div class="metric-card" id="perfList" onclick="setDrillDown('rating', null)"></div>
-            </div>
-
-            <div class="dashboard-section">
-                <div class="dashboard-h3">Organizational Health</div>
-                <div class="metric-card" style="cursor: default; border-left: 4px solid #10b981;">
-                    <div class="metric-row"><span>Avg Span of Control</span><span id="dashRatioVal" class="metric-val">0:1</span></div>
-                    <div class="metric-row"><span>Avg Tenure</span><span id="dashTenure" class="metric-val">0 Yrs</span></div>
-                    <div class="metric-row"><span>Rolling 12mo New Hires</span><span id="dashGrowth" class="metric-val">0</span></div>
-                </div>
-            </div>
-
-            <div class="dashboard-section">
-                <div class="dashboard-h3">Dept Scale (Click Row to Reset)</div>
-                <div class="metric-card scroll-box" id="deptList" onclick="setDrillDown('headcount', null)"></div>
-            </div>
+            <div class="dashboard-section"><div class="dashboard-h3">Payroll Costs</div><div class="metric-card" onclick="setDrillDown('salary', null)"><div class="metric-row"><span>Base Payroll</span><span id="dashBasePay" class="metric-val">$0</span></div><div class="metric-row"><span>Burdened Cost</span><span id="dashBurdenPay" class="metric-val">$0</span></div><div class="metric-row"><span>Avg Salary</span><span id="dashAvgPay" class="metric-val">$0</span></div></div></div>
+            <div class="dashboard-section"><div class="dashboard-h3">Job Level Makeup</div><div class="metric-card scroll-box" id="tierList" onclick="setDrillDown('tier', null)"></div></div>
+            <div class="dashboard-section"><div class="dashboard-h3">Ratings Distribution</div><div class="metric-card" id="perfList" onclick="setDrillDown('rating', null)"></div></div>
+            <div class="dashboard-section"><div class="dashboard-h3">Department Size</div><div class="metric-card scroll-box" id="deptList" onclick="setDrillDown('headcount', null)"></div></div>
+            <div class="dashboard-section"><div class="dashboard-h3">Organizational Health</div><div class="metric-card" style="cursor:default; border-left:4px solid #10b981;"><div class="metric-row"><span>Avg Span</span><span id="dashRatioVal" class="metric-val">0:1</span></div><div class="metric-row"><span>Avg Tenure</span><span id="dashTenureVal" class="metric-val">0 Yrs</span></div><div class="metric-row"><span>Rolling 12mo New Hires</span><span id="dashGrowth" class="metric-val">0</span></div></div></div>
         </div>
-
-        <div class="chart-column">
-            <div class="dashboard-h3" id="mainChartTitle">Headcount Distribution</div>
-            <div style="height: 650px;"><canvas id="mainDashboardChart"></canvas></div>
-        </div>
+        <div class="chart-column"><div class="dashboard-h3" id="mainChartTitle" style="color: white; opacity: 0.5;">Analysis View</div><div style="height: 650px;"><canvas id="mainDashboardChart"></canvas></div></div>
     </div>
 </div>
 
@@ -125,43 +120,14 @@
 
 <div id="controls">
     <div class="command-row">
-        <div class="panel">
-            <span class="stat-label" style="color:#64748b">1. Data Management</span>
-            <input type="file" id="fileInput" accept=".csv" />
-            <div style="display:flex; gap:8px; margin-top:10px;">
-                <button class="btn" style="background:#16a34a; flex:1" onclick="downloadCSV()">Export CSV</button>
-                <button class="btn" style="background:#64748b; flex:1" onclick="resetFilter()">Reset View</button>
-            </div>
-        </div>
-        <div class="panel">
-            <span class="stat-label" style="color:#64748b">2. Organizational Filter</span>
-            <select id="filterMode" onchange="toggleFilterFields()">
-                <option value="none">Select Filter Type...</option>
-                <option value="team">By Manager</option>
-                <option value="dept">By Department</option>
-            </select>
-            <div id="filterInputContainer" style="display:none; margin-top:8px;">
-                <input type="text" id="filterValue" list="dynamicList" placeholder="Search...">
-                <button class="btn" style="background:#7c3aed; width:100%; margin-top:8px;" onclick="runFilter()">Update Chart</button>
-            </div>
-        </div>
-        <div class="panel">
-            <span class="stat-label" style="color:#64748b">3. Actions</span>
-            <select id="editMode" onchange="toggleEditFields()">
-                <option value="none">Select Action...</option>
-                <option value="move">Move Employee</option>
-            </select>
-            <div id="editFields" style="display:none; margin-top:8px;">
-                <input type="text" id="editTarget" list="namesList" placeholder="Target Name" style="margin-bottom:5px">
-                <input type="text" id="editExtra" placeholder="Destination">
-                <button class="btn" style="background:#f59e0b; width:100%; margin-top:8px;" onclick="runEdit()">Execute</button>
-            </div>
-        </div>
+        <div class="panel"><div class="dashboard-h3">1. Data Management</div><input type="file" id="fileInput" accept=".csv" /><div style="display:flex; gap:8px; margin-top:10px;"><button class="btn" style="background:#16a34a; flex:1" onclick="downloadCSV()">Export</button><button class="btn" style="background:#64748b; flex:1" onclick="resetFilter()">Reset</button></div></div>
+        <div class="panel"><div class="dashboard-h3">2. Organizational Filter</div><select id="filterMode" onchange="toggleFilterFields()"><option value="none">Select Type...</option><option value="team">By Manager</option><option value="dept">By Department</option></select><div id="filterInputContainer" style="display:none;"><input type="text" id="filterValue" list="dynamicList"><button class="btn" style="background:#7c3aed; width:100%; margin-top:8px;" onclick="runFilter()">Apply Filter</button></div></div>
+        <div class="panel"><div class="dashboard-h3">3. Fast Actions</div><select id="editMode" onchange="toggleEditFields()"><option value="none">Select Action...</option><option value="move">Update Manager</option><option value="deptUpdate">Update Dept</option><option value="hire">Add Hire</option><option value="delete">Remove Record</option></select><div id="editFields" style="display:none;"><input type="text" id="editTarget" list="namesList" placeholder="Name"><button class="btn" style="background:#f59e0b; width:100%; margin-top:8px;" onclick="runEdit()">Execute</button></div></div>
     </div>
 </div>
 
 <div class="chart-container"></div>
-<datalist id="namesList"></datalist><datalist id="deptsList"></datalist><datalist id="dynamicList"></datalist>
+<datalist id="namesList"></datalist><datalist id="dynamicList"></datalist>
 
 <script>
     Chart.register(ChartDataLabels);
@@ -170,8 +136,35 @@
     let currentDrillMode = 'headcount', currentDrillTarget = null;
     const colorPalette = ['#2563eb', '#16a34a', '#dc2626', '#f59e0b', '#7c3aed', '#db2777', '#0891b2', '#ea580c', '#65a30d', '#4f46e5'];
 
-    function toggleUI() { document.getElementById('mainBody').classList.toggle('controls-hidden'); setTimeout(() => { if(allData.length > 0) chart.render().fit(); }, 350); }
+    function toggleUI() { document.body.classList.toggle('body-controls-hidden'); setTimeout(() => { if(allData.length > 0) chart.render().fit(); }, 400); }
     function toggleDashboard() { document.getElementById('analyticsDashboard').classList.toggle('open'); }
+    function closeSpotlight() { document.getElementById('employeeSpotlight').style.display = 'none'; }
+    
+    // THE UNBREAKABLE SPOTLIGHT TRIGGER
+    window.spotlightById = function(id) {
+        const emp = allData.find(d => d.id === id);
+        if (!emp) return;
+        document.getElementById('spotName').innerText = emp.name;
+        document.getElementById('spotTitle').innerText = emp.title || 'N/A';
+        document.getElementById('spotManager').innerText = (!emp.parentId || emp.parentId === 'ROOT') ? 'CEO' : emp.parentId;
+        document.getElementById('spotLocation').innerText = (emp.city || emp.state) ? `${emp.city || ''}, ${emp.state || ''}`.trim() : 'Remote';
+        document.getElementById('spotDept').innerText = emp.department || 'N/A';
+        document.getElementById('spotEmail').innerText = emp.email || 'N/A';
+        const sd = new Date(emp.startDate);
+        document.getElementById('spotTenure').innerText = isNaN(sd) ? 'N/A' : ((new Date() - sd) / (1000 * 60 * 60 * 24 * 365.25)).toFixed(1) + ' Years';
+        document.getElementById('employeeSpotlight').style.display = 'block';
+    };
+
+    function cleanSalary(val) { if (!val) return 0; return parseFloat(String(val).replace(/[$,]/g, "")) || 0; }
+    function parseRating(val) { if (!val || String(val).trim() === "" || String(val) === "NaN") return "NR"; let m = String(val).match(/\d/); return m ? parseInt(m[0]) : "NR"; }
+    
+    function getStrategicGroup(row) {
+        const lv = (row.jobLevel || "").trim().toUpperCase();
+        if (lv === "C-LEVEL") return "C-Level";
+        if (lv.startsWith("VP")) return "VP";
+        if (lv.startsWith("M")) return "People Managers";
+        return "Individual Contributors";
+    }
 
     function parseCSVRobust(text) {
         const result = []; let row = ['']; let inQuotes = false; let i = 0;
@@ -188,24 +181,7 @@
         return result;
     }
 
-    function cleanSalary(val) { if (!val) return 0; return parseFloat(String(val).replace(/[$,]/g, "")) || 0; }
-    function parseRating(val) { if (!val || String(val).trim() === "" || String(val) === "NaN") return "NR"; let m = String(val).match(/\d/); return m ? parseInt(m[0]) : "NR"; }
-    
-    function getStrategicGroup(row) {
-        const lv = (row.jobLevel || "").trim().toUpperCase();
-        if (lv === "C-LEVEL") return "C-Level";
-        if (lv.startsWith("VP")) return "VP";
-        if (lv.startsWith("M")) return "People Managers";
-        if (lv.startsWith("IC")) return "Individual Contributors";
-        return "Unassigned";
-    }
-
-    function setDrillDown(mode, target) {
-        currentDrillMode = mode;
-        currentDrillTarget = target;
-        updateDashboardStats(currentViewData);
-    }
-
+    function setDrillDown(mode, target) { currentDrillMode = mode; currentDrillTarget = target; updateDashboardStats(currentViewData); }
     function toggleFilterFields() { document.getElementById('filterInputContainer').style.display = (document.getElementById('filterMode').value === 'none') ? 'none' : 'block'; }
     function toggleEditFields() { document.getElementById('editFields').style.display = (document.getElementById('editMode').value === 'none') ? 'none' : 'block'; }
 
@@ -234,180 +210,157 @@
             currentViewData.forEach(d => { if (!names.has(d.parentId)) d.parentId = "VIEW_ROOT"; });
             currentViewData.push({ id: "VIEW_ROOT", name: val, isGhost: true, parentId: null });
         }
-        document.getElementById('statStatus').innerText = "Filtered View";
         refresh(true);
+    }
+
+    function runEdit() {
+        const mode = document.getElementById('editMode').value;
+        const target = document.getElementById('editTarget').value;
+        if (!target) return;
+        if (mode === 'delete' && confirm(`Delete ${target}?`)) allData = allData.filter(d => d.id !== target);
+        resetFilter();
     }
 
     function updateDashboardStats(data) {
         const real = data.filter(d => !d.isGhost);
         if (real.length === 0) return;
-        
         const totalPayroll = real.reduce((acc, d) => acc + cleanSalary(d.salary), 0);
         const setEl = (id, val) => { if(document.getElementById(id)) document.getElementById(id).innerText = val; };
         setEl('dashBasePay', "$" + Math.round(totalPayroll).toLocaleString());
         setEl('dashBurdenPay', "$" + Math.round(totalPayroll * 1.19).toLocaleString());
         setEl('dashAvgPay', "$" + Math.round(totalPayroll / real.length).toLocaleString());
         
-        // 1. Job Level Overview
-        const groups = { "C-Level": 0, "VP": 0, "People Managers": 0, "Individual Contributors": 0, "Unassigned": 0 };
-        real.forEach(d => { groups[getStrategicGroup(d)]++; });
-        document.getElementById('tierList').innerHTML = ["C-Level", "VP", "People Managers", "Individual Contributors", "Unassigned"]
-            .map(k => `<div class="metric-row"><span>${k}</span><span class="metric-val">${groups[k]}</span></div>`).join('');
+        const groups = { "C-Level": 0, "VP": 0, "People Managers": 0, "Individual Contributors": 0 };
+        real.forEach(d => { let g = getStrategicGroup(d); if(groups[g] !== undefined) groups[g]++; });
+        document.getElementById('tierList').innerHTML = Object.entries(groups).map(([k,v]) => `<div class="metric-row"><span>${k}</span><span class="metric-val">${v}</span></div>`).join('');
 
-        // 2. Performance Overview
         const ratings = { 5:0, 4:0, 3:0, 2:0, 1:0, "NR": 0 };
         real.forEach(d => { let r = parseRating(d.rating); if(ratings[r] !== undefined) ratings[r]++; });
         document.getElementById('perfList').innerHTML = [5,4,3,2,1,"NR"].map(r => `<div class="metric-row"><span>Rating ${r}</span><span class="metric-val">${ratings[r]}</span></div>`).join('');
 
-        // 3. Dept Distribution
         const dStats = {};
         real.forEach(d => { dStats[d.department] = (dStats[d.department] || 0) + 1; });
         document.getElementById('deptList').innerHTML = Object.entries(dStats).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `<div class="metric-row"><span>${k}</span><span class="metric-val">${v}</span></div>`).join('');
 
-        // 4. RESTORED: Health Metrics Logic
         const managers = new Set(real.map(d => d.parentId).filter(p => p && p !== 'ROOT' && p !== 'VIEW_ROOT'));
         const ratio = (managers.size > 0 ? ((real.length - 1) / managers.size).toFixed(1) : 0);
         setEl('dashRatioVal', ratio + ":1");
-        
-        // Tenure Calculation
-        const avgTenure = real.reduce((acc, d) => {
-            const sd = new Date(d.startDate);
-            return acc + (isNaN(sd) ? 0 : (new Date() - sd) / (1000 * 60 * 60 * 24 * 365.25));
-        }, 0) / real.length;
-        setEl('dashTenure', avgTenure.toFixed(1) + " Yrs");
+        setEl('statRatio', ratio + ":1");
 
-        // Rolling 12mo New Hires
-        const twelveMonthsAgo = new Date(); twelveMonthsAgo.setFullYear(twelveMonthsAgo.getFullYear() - 1);
-        const growthCount = real.filter(d => {
-            const sd = new Date(d.startDate);
-            return sd >= twelveMonthsAgo && sd <= new Date();
-        }).length;
-        setEl('dashGrowth', growthCount);
+        const avgTenure = real.reduce((acc, d) => { const s = new Date(d.startDate); return acc + (isNaN(s) ? 0 : (new Date() - s) / (1000 * 60 * 60 * 24 * 365.25)); }, 0) / real.length;
+        setEl('dashTenureVal', avgTenure.toFixed(1) + " Yrs");
 
-        // --- Chart Logic ---
-        const allReal = allData.filter(d => !d.isGhost);
-        const deptNames = [...new Set(allReal.map(d => d.department))].sort();
-        let chartData = [], chartLabels = [], chartTitle = "Analysis", chartType = 'bar', chartBgColors = '#2563eb';
+        const twelveMo = new Date(); twelveMo.setFullYear(twelveMo.getFullYear() - 1);
+        setEl('dashGrowth', real.filter(d => new Date(d.startDate) >= twelveMo).length);
+
+        const deptNames = [...new Set(allData.filter(d => !d.isGhost).map(d => d.department))].sort();
+        let chartData = [], chartLabels = [], chartType = 'bar';
 
         if (currentDrillMode === 'rating') {
             chartType = 'pie'; chartLabels = ["Rating 5", "Rating 4", "Rating 3", "Rating 2", "Rating 1", "NR"];
             chartData = [ratings[5], ratings[4], ratings[3], ratings[2], ratings[1], ratings["NR"]];
-            chartTitle = "Performance Curve (%)";
-            chartBgColors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#7f1d1d', '#94a3b8'];
         } else if (currentDrillMode === 'tier') {
             chartLabels = ["C-Level", "VP", "People Managers", "Individual Contributors"];
-            chartData = chartLabels.map(l => groups[l]); chartTitle = "Strategic Tiering (%)";
-            chartBgColors = ['#0f172a', '#2563eb', '#38bdf8', '#94a3b8'];
+            chartData = chartLabels.map(l => groups[l]);
         } else if (currentDrillMode === 'salary') {
-            chartLabels = deptNames;
-            chartData = deptNames.map(dept => {
-                const emps = allReal.filter(d => d.department === dept);
+            chartLabels = deptNames; chartData = deptNames.map(dept => {
+                const emps = allData.filter(d => !d.isGhost && d.department === dept);
                 return emps.length ? Math.round(emps.reduce((a,b) => a + cleanSalary(b.salary), 0) / emps.length) : 0;
             });
-            chartTitle = "Avg Salary by Dept";
         } else {
-            chartLabels = deptNames; chartData = deptNames.map(dept => allReal.filter(d => d.department === dept).length);
-            chartTitle = "Headcount Distribution (%)";
+            chartLabels = deptNames; chartData = deptNames.map(dept => allData.filter(d => !d.isGhost && d.department === dept).length);
         }
 
-        setEl('mainChartTitle', chartTitle);
         if (mainChartInstance) mainChartInstance.destroy();
         mainChartInstance = new Chart(document.getElementById('mainDashboardChart'), {
             type: chartType,
-            data: { labels: chartLabels, datasets: [{ data: chartData, backgroundColor: chartType === 'bar' ? '#2563eb' : chartBgColors, borderRadius: 6 }] },
+            data: { labels: chartLabels, datasets: [{ data: chartData, backgroundColor: chartType === 'bar' ? '#38bdf8' : ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#7f1d1d', '#94a3b8'], borderRadius: 6 }] },
             options: { 
                 plugins: { 
-                    legend: { display: chartType === 'pie', position: 'bottom' },
+                    legend: { display: chartType === 'pie', position: 'bottom', labels: { color: '#fff' } },
                     datalabels: {
-                        color: chartType === 'pie' ? '#fff' : '#0f172a',
-                        font: { weight: '800', size: 10 },
-                        formatter: (value, ctx) => {
-                            if (value === 0) return '';
-                            let sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                            let percentage = ((value / sum) * 100).toFixed(1) + "%";
-                            return currentDrillMode === 'salary' ? "$" + value.toLocaleString() : value + " (" + percentage + ")";
-                        }
+                        color: '#fff', font: { weight: 'bold', size: chartType === 'pie' ? 14 : 11 },
+                        formatter: (value, ctx) => { if (value === 0) return ''; let sum = ctx.dataset.data.reduce((a, b) => a + b, 0); let perc = ((value / sum) * 100).toFixed(1) + "%"; return currentDrillMode === 'salary' ? "$" + value.toLocaleString() : value + " (" + perc + ")"; }
                     }
                 }, 
                 responsive: true, maintainAspectRatio: false,
-                scales: chartType === 'bar' ? { y: { beginAtZero: true } } : { x: { display: false }, y: { display: false } }
+                scales: chartType === 'bar' ? { y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } : {}
             },
             plugins: [ChartDataLabels]
         });
 
         setEl('statHC', real.length);
         setEl('statPayroll', "$" + Math.round(totalPayroll).toLocaleString());
-        setEl('statRatio', ratio + ":1");
-    }
-
-    function calculateHeadcounts(data) {
-        const map = {}; data.forEach(d => { map[d.id] = d; d._totalHeadcount = 0; });
-        data.forEach(d => { let p = map[d.parentId]; while (p) { p._totalHeadcount++; p = map[p.parentId]; } });
-        updateDashboardStats(data);
-    }
-
-    function resetFilter() { 
-        if (allData.length === 0) return; 
-        document.getElementById('statStatus').innerText = "Full Org"; 
-        document.getElementById('filterValue').value = "";
-        document.getElementById('dashDeptFilter').value = "";
-        document.getElementById('dashManagerFilter').value = "";
-        currentDrillMode = 'headcount'; currentViewData = JSON.parse(JSON.stringify(allData)); 
-        refresh(true); 
     }
 
     function refresh(fitView = false) {
         if (currentViewData.length === 0) return;
-        calculateHeadcounts(currentViewData);
+        const map = {}; currentViewData.forEach(d => { map[d.id] = d; d._totalHeadcount = 0; });
+        currentViewData.forEach(d => { let p = map[d.parentId]; while (p) { p._totalHeadcount++; p = map[p.parentId]; } });
+        updateDashboardStats(currentViewData);
         updateAutocomplete();
-        chart.data(currentViewData).nodeWidth(d => 220).nodeHeight(d => 90).compact(true).nodeContent(d => {
-            if (d.data.isGhost) return `<div style="padding:15px; background:#0f172a; color:white; border-radius:12px; text-align:center;"><div style="font-weight:800; font-size:14px;">${d.data.name}</div></div>`;
-            const boxColor = deptColors[d.data.department] || '#cbd5e1';
-            return `<div style="position:relative; padding:12px; background:white; border-left: 6px solid ${boxColor}; border-radius:12px; height:66px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                ${d.data._totalHeadcount > 0 ? `<div style="position:absolute; top:-10px; right:-10px; background:#0f172a; color:white; border-radius:50%; min-width:20px; height:20px; font-size:10px; display:flex; align-items:center; justify-content:center; border:2px solid white;">${d.data._totalHeadcount}</div>` : ''}
-                <div style="font-weight:700; font-size:12px; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.data.name}</div>
-                <div style="font-size:10px; color:#64748b; margin-top:2px;">${d.data.title}</div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                    <div style="font-size:9px; color:${boxColor}; background:${boxColor}15; padding:2px 6px; border-radius:6px; font-weight:800;">${d.data.department}</div>
-                    <span style="font-size:9px; color:#94a3b8; font-weight:800;">${d.data.jobLevel}</span>
-                </div>
-            </div>`;
-        }).render();
-        if (fitView) chart.fit().zoomLevel(0.8);
+        
+        chart.data(currentViewData).nodeWidth(d => 220).nodeHeight(d => 90).compact(true)
+            .nodeContent(d => {
+                if (d.data.isGhost) return `<div style="padding:15px; background:#0f172a; color:white; border-radius:12px; text-align:center;"><div style="font-weight:800; font-size:14px;">${d.data.name}</div></div>`;
+                const boxColor = deptColors[d.data.department] || '#cbd5e1';
+                // ATTACHING DIRECT ONCLICK TO NODE HTML
+                return `<div onclick="window.spotlightById('${d.data.id}')" style="position:relative; cursor:pointer; padding:12px; background:white; border-left: 6px solid ${boxColor}; border-radius:12px; height:66px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    ${d.data._totalHeadcount > 0 ? `<div class="node-badge" style="position:absolute; top:-10px; right:-10px; background:#0f172a; color:white; border-radius:50%; min-width:20px; height:20px; font-size:10px; display:flex; align-items:center; justify-content:center; border:2px solid white;">${d.data._totalHeadcount}</div>` : ''}
+                    <div style="font-weight:700; font-size:12px; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.data.name}</div>
+                    <div style="font-size:10px; color:#64748b; margin-top:2px;">${d.data.title}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                        <div style="font-size:9px; color:${boxColor}; background:${boxColor}15; padding:2px 6px; border-radius:6px; font-weight:800;">${d.data.department}</div>
+                        <span style="font-size:9px; color:#94a3b8; font-weight:800;">${d.data.jobLevel}</span>
+                    </div>
+                </div>`;
+            }).render();
+        if (fitView) chart.fit();
     }
 
     function updateAutocomplete() {
-        const dDF = document.getElementById('dashDeptFilter'), dMF = document.getElementById('dashManagerFilter');
+        const dDF = document.getElementById('dashDeptFilter'), dMF = document.getElementById('dashManagerFilter'), nL = document.getElementById('namesList'), dL = document.getElementById('dynamicList');
         const depts = new Set(), managers = new Set();
+        nL.innerHTML = "";
         allData.filter(d => !d.isGhost).forEach(d => {
             if (d.department) depts.add(d.department);
-            if (d._totalHeadcount > 0) managers.add(d.name);
+            if (allData.some(e => e.parentId === d.name)) managers.add(d.name);
+            let opt = document.createElement('option'); opt.value = d.name; nL.appendChild(opt);
         });
-        if (dDF.options.length <= 1) {
-            depts.forEach(d => { const o = document.createElement('option'); o.value = d; o.innerText = d; dDF.appendChild(o); });
-            managers.forEach(m => { const o = document.createElement('option'); o.value = m; o.innerText = m; dMF.appendChild(o); });
-        }
+        dDF.innerHTML = '<option value="">Quick Dept Filter...</option>';
+        dMF.innerHTML = '<option value="">Quick Manager Filter...</option>';
+        depts.forEach(d => { let o = document.createElement('option'); o.value = d; o.innerText = d; dDF.appendChild(o); });
+        managers.forEach(m => { let o = document.createElement('option'); o.value = m; o.innerText = m; dMF.appendChild(o); });
+        // Update Datalist for main search
+        dL.innerHTML = "";
+        depts.forEach(d => { let o = document.createElement('option'); o.value = d; dL.appendChild(o); });
+        allData.filter(d => !d.isGhost).forEach(d => { let o = document.createElement('option'); o.value = d.name; dL.appendChild(o); });
     }
 
     function updateDeptColors(data) { const depts = [...new Set(data.filter(d => d.department).map(d => d.department))]; depts.forEach((d, i) => { deptColors[d] = colorPalette[i % colorPalette.length]; }); }
+    function resetFilter() { if (allData.length === 0) return; currentDrillMode = 'headcount'; currentViewData = JSON.parse(JSON.stringify(allData)); refresh(true); closeSpotlight(); }
+
+    function downloadCSV() {
+        let csv = "Full Name,Title,Manager (name),Department,Salary,Job Level,Start Date,2025 Mid-Year Rating,Work Email,City,State/Cty.\n";
+        allData.filter(d => !d.isGhost).forEach(d => { csv += `"${d.name}","${d.title}","${d.parentId === 'ROOT' ? '' : d.parentId}","${d.department}","${d.salary}","${d.jobLevel}","${d.startDate}","${d.rating}","${d.email}","${d.city}","${d.state}"\n`; });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'org_export.csv'; a.click();
+    }
 
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const reader = new FileReader();
         reader.onload = function(event) {
             const rows = parseCSVRobust(event.target.result);
             const headers = rows[0].map(h => h.trim().toLowerCase());
-            const idxFull = headers.indexOf('full name'), idxTitle = headers.indexOf('title'), idxMan = headers.indexOf('manager (name)'), idxDept = headers.indexOf('department'), idxSal = headers.indexOf('salary'), idxRat = headers.indexOf('2025 mid-year rating'), idxLev = headers.indexOf('job level'), idxDate = headers.indexOf('start date');
-            
-            allData = rows.slice(1).filter(c => c[idxFull]).map(c => ({
-                id: c[idxFull].trim(), name: c[idxFull].trim(), title: idxTitle !== -1 ? c[idxTitle] : "", parentId: (idxMan !== -1 && c[idxMan]) ? c[idxMan].trim() : "ROOT", department: idxDept !== -1 ? c[idxDept].trim() : "Unassigned",
-                salary: idxSal !== -1 ? c[idxSal] : 0, rating: idxRat !== -1 ? c[idxRat] : null, jobLevel: idxLev !== -1 ? c[idxLev] : "", startDate: idxDate !== -1 ? c[idxDate] : ""
+            const iF = headers.indexOf('full name'), iT = headers.indexOf('title'), iM = headers.indexOf('manager (name)'), iD = headers.indexOf('department'), iS = headers.indexOf('salary'), iR = headers.indexOf('2025 mid-year rating'), iL = headers.indexOf('job level'), iE = headers.indexOf('work email'), iC = headers.indexOf('city'), iSt = headers.indexOf('state/cty.'), iDte = headers.indexOf('start date');
+            allData = rows.slice(1).filter(c => c[iF]).map(c => ({
+                id: c[iF].trim(), name: c[iF].trim(), title: iT !== -1 ? c[iT] : "", parentId: (iM !== -1 && c[iM]) ? c[iM].trim() : "ROOT", department: iD !== -1 ? c[iD].trim() : "Unassigned",
+                salary: iS !== -1 ? c[iS] : 0, rating: iR !== -1 ? c[iR] : null, jobLevel: iL !== -1 ? c[iL] : "", email: iE !== -1 ? c[iE] : "N/A", city: iC !== -1 ? c[iC] : "", state: iSt !== -1 ? c[iSt] : "", startDate: iDte !== -1 ? c[iDte] : ""
             }));
             const names = new Set(allData.map(d => d.id));
             allData.forEach(d => { if (d.parentId !== "ROOT" && !names.has(d.parentId)) d.parentId = "ROOT"; });
             allData.push({ id: "ROOT", name: "Organization", isGhost: true, parentId: null });
-            const depts = [...new Set(allData.filter(d => d.department).map(d => d.department))];
-            depts.forEach((d, i) => { deptColors[d] = colorPalette[i % colorPalette.length]; });
-            resetFilter();
+            updateDeptColors(allData); resetFilter();
         };
         reader.readAsText(e.target.files[0]);
     });
