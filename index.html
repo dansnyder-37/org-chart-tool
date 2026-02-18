@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>HR Executive Intelligence - Spotlight Fixed</title>
+    <title>HR Executive Intelligence - Pro Suite Stable</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-org-chart@2.6.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-flextree@2.1.2/build/d3-flextree.js"></script>
@@ -12,38 +12,32 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; background: #f1f5f9; padding: 20px; color: #1e293b; margin: 0; overflow-x: hidden; }
         
-        #statsBar { 
-            display: flex; gap: 20px; margin-bottom: 15px; 
-            background: #0f172a; color: white; padding: 15px 25px; 
-            border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-            justify-content: space-between; border: 1px solid rgba(255,255,255,0.1);
-        }
+        #statsBar { display: flex; gap: 20px; margin-bottom: 15px; background: #0f172a; color: white; padding: 15px 25px; border-radius: 16px; justify-content: space-between; border: 1px solid rgba(255,255,255,0.1); }
         .stat-item { display: flex; flex-direction: column; flex: 1; border-right: 1px solid rgba(255,255,255,0.1); padding-left: 10px; }
         .stat-item:last-child { border-right: none; }
         .stat-value { font-size: 18px; font-weight: 800; color: #38bdf8; }
         .stat-label { font-size: 9px; text-transform: uppercase; opacity: 0.6; font-weight: 700; letter-spacing: 0.05em; }
 
-        /* Spotlight Popup - MOVED TO BOTTOM LEFT */
+        /* Bubble Tag System */
+        .bubble-container { border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px; background: white; display: flex; flex-wrap: wrap; gap: 6px; min-height: 38px; align-items: center; margin-top: 5px; cursor: text; }
+        .tag-bubble { background: #2563eb; color: white; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2); }
+        .tag-remove { cursor: pointer; font-size: 14px; line-height: 1; }
+        .bubble-input { border: none; outline: none; flex: 1; min-width: 60px; font-size: 11px; font-family: inherit; }
+
         #employeeSpotlight {
             position: fixed; bottom: 30px; left: 30px; width: 340px;
             background: white; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
             z-index: 100000; padding: 28px; border: 2px solid #2563eb;
             display: none; animation: slideUp 0.3s ease-out;
         }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateX(0); } }
         .spotlight-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         .spotlight-name { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0; }
         .spotlight-close { background: #f1f5f9; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; color: #0f172a; font-weight: 900; display: flex; align-items: center; justify-content: center; }
         .spotlight-label { font-size: 10px; text-transform: uppercase; color: #94a3b8; font-weight: 800; margin-top: 14px; display: block; }
         .spotlight-value { font-size: 14px; color: #334155; font-weight: 600; margin-top: 2px; }
 
-        /* Dashboard */
-        #analyticsDashboard {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #ffffff; z-index: 8000; padding: 40px 60px; box-sizing: border-box;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            transform: translateY(100%); overflow-y: auto; visibility: hidden;
-        }
+        #analyticsDashboard { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 8000; padding: 40px 60px; box-sizing: border-box; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(100%); visibility: hidden; overflow-y: auto; }
         #analyticsDashboard.open { transform: translateY(0); visibility: visible; }
         .close-dash { position: fixed; top: 30px; right: 40px; padding: 10px 24px; background: #0f172a; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 800; z-index: 8001; }
         
@@ -51,23 +45,23 @@
         .chart-column { background: #0f172a; padding: 30px; border-radius: 24px; }
         .metric-card { background: white; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s; margin-bottom: 12px; }
         .metric-card:hover { border-color: #2563eb; transform: translateY(-2px); }
-        .metric-row { display: flex; justify-content: space-between; font-size: 13px; }
+        .metric-row { display: flex; justify-content: space-between; font-size: 13px; pointer-events: none; }
         .scroll-box { max-height: 180px; overflow-y: auto; }
         .dashboard-h3 { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px; letter-spacing: 0.1em; }
 
         .chart-container { height: 65vh; background: #ffffff; border-radius: 20px 20px 0 0; border: 1px solid #e2e8f0; border-bottom: none; position: relative; overflow: hidden; }
-        
         #controls { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 20px; display: block; }
         .body-controls-hidden #controls, .body-controls-hidden #statsBar { display: none !important; }
         .body-controls-hidden .chart-container { height: 95vh; }
 
-        .command-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-        .panel { background: #f8fafc; padding: 15px; border-radius: 12px; }
-        .btn-float { position: fixed; bottom: 30px; z-index: 7000; padding: 14px 28px; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); font-weight: 700; font-size: 12px; transition: all 0.2s; }
+        .command-row { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 20px; }
+        .panel { background: #f8fafc; padding: 15px; border-radius: 12px; position: relative; }
+        .btn-float { position: fixed; bottom: 30px; z-index: 7000; padding: 14px 28px; border: none; border-radius: 50px; cursor: pointer; font-weight: 700; font-size: 12px; transition: all 0.2s; }
         #uiToggle { left: 30px; background: #0f172a; color: white; }
         #dashToggle { right: 30px; background: #2563eb; color: white; }
         .btn { padding: 10px 14px; color: white; border: none; cursor: pointer; border-radius: 8px; font-weight: 600; font-size: 11px; }
-        select, input { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px; width: 100%; background: white; margin-top: 5px; }
+        select, input { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 11px; width: 100%; background: white; margin-top: 5px; box-sizing: border-box; }
+        .helper-text { font-size: 9px; color: #64748b; margin-top: 4px; display: block; font-weight: 500; }
     </style>
 </head>
 <body id="mainBody">
@@ -82,7 +76,7 @@
     <span class="spotlight-label">Location</span><div id="spotLocation" class="spotlight-value">-</div>
     <span class="spotlight-label">Department</span><div id="spotDept" class="spotlight-value">-</div>
     <span class="spotlight-label">Tenure</span><div id="spotTenure" class="spotlight-value">-</div>
-    <span class="spotlight-label">Work Email</span><div id="spotEmail" class="spotlight-value" style="color:#2563eb;">-</div>
+    <span class="spotlight-label">Work Email</span><div id="spotEmail" class="spotlight-value" style="color:#2563eb; font-weight: 700;">-</div>
 </div>
 
 <button id="uiToggle" class="btn-float" onclick="toggleUI()">Show/Hide Controls</button>
@@ -92,13 +86,12 @@
     <button class="close-dash" onclick="toggleDashboard()">Close Dashboard</button>
     <div class="dash-header">
         <div><h1 style="margin:0; font-size:36px; font-weight:800; color: #0f172a;">Executive Intelligence</h1><p id="dashSubTitle" style="color:#64748b; margin-top:5px;">Live Organizational Data</p></div>
-        <div style="display:flex; gap:12px; align-items:center; background:#f1f5f9; padding:10px; border-radius:16px;">
+        <div style="display:flex; gap:12px; align-items:center; background:#f1f5f9; padding:10px; border-radius:16px; margin-bottom:15px;">
             <select id="dashDeptFilter" onchange="applyDashFilter('dept')"><option value="">Filter by Dept...</option></select>
             <select id="dashManagerFilter" onchange="applyDashFilter('team')"><option value="">Filter by Manager...</option></select>
             <button class="btn" style="background:#0f172a;" onclick="resetFilter()">Reset All</button>
         </div>
     </div>
-
     <div class="dash-grid">
         <div class="analytics-column">
             <div class="dashboard-section"><div class="dashboard-h3">Payroll Costs</div><div class="metric-card" onclick="setDrillDown('salary', null)"><div class="metric-row"><span>Base Payroll</span><span id="dashBasePay" class="metric-val">$0</span></div><div class="metric-row"><span>Burdened Cost</span><span id="dashBurdenPay" class="metric-val">$0</span></div><div class="metric-row"><span>Avg Salary</span><span id="dashAvgPay" class="metric-val">$0</span></div></div></div>
@@ -120,27 +113,85 @@
 
 <div id="controls">
     <div class="command-row">
-        <div class="panel"><div class="dashboard-h3">1. Data Management</div><input type="file" id="fileInput" accept=".csv" /><div style="display:flex; gap:8px; margin-top:10px;"><button class="btn" style="background:#16a34a; flex:1" onclick="downloadCSV()">Export</button><button class="btn" style="background:#64748b; flex:1" onclick="resetFilter()">Reset</button></div></div>
-        <div class="panel"><div class="dashboard-h3">2. Organizational Filter</div><select id="filterMode" onchange="toggleFilterFields()"><option value="none">Select Type...</option><option value="team">By Manager</option><option value="dept">By Department</option></select><div id="filterInputContainer" style="display:none;"><input type="text" id="filterValue" list="dynamicList"><button class="btn" style="background:#7c3aed; width:100%; margin-top:8px;" onclick="runFilter()">Apply Filter</button></div></div>
-        <div class="panel"><div class="dashboard-h3">3. Fast Actions</div><select id="editMode" onchange="toggleEditFields()"><option value="none">Select Action...</option><option value="move">Update Manager</option><option value="deptUpdate">Update Dept</option><option value="hire">Add Hire</option><option value="delete">Remove Record</option></select><div id="editFields" style="display:none;"><input type="text" id="editTarget" list="namesList" placeholder="Name"><button class="btn" style="background:#f59e0b; width:100%; margin-top:8px;" onclick="runEdit()">Execute</button></div></div>
+        <div class="panel">
+            <div class="dashboard-h3">1. Data & Direct Search</div>
+            <input type="file" id="fileInput" accept=".csv" />
+            <div style="margin-top: 10px; display: flex; gap: 5px;">
+                <input type="text" id="globalSearch" list="namesList" placeholder="Search Employee...">
+                <button class="btn" style="background:#2563eb; white-space: nowrap;" onclick="focusEmployee(document.getElementById('globalSearch').value)">Focus & Center</button>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:10px;"><button class="btn" style="background:#16a34a; flex:1" onclick="downloadCSV()">Export</button><button class="btn" style="background:#64748b; flex:1" onclick="resetFilter()">Reset</button></div>
+        </div>
+        <div class="panel">
+            <div class="dashboard-h3">2. Organizational Filter</div>
+            <select id="filterMode" onchange="toggleFilterFields()"><option value="none">Select Type...</option><option value="team">By Manager</option><option value="dept">By Department</option></select>
+            <div id="filterInputContainer" style="display:none;"><input type="text" id="filterValue" list="dynamicList"><button class="btn" style="background:#7c3aed; width:100%; margin-top:8px;" onclick="runFilter()">Apply Filter</button></div>
+        </div>
+        <div class="panel">
+            <div class="dashboard-h3">3. Fast Actions</div>
+            <select id="editMode" onchange="toggleEditFields()">
+                <option value="none">Select Action...</option>
+                <option value="move">Update Manager</option>
+                <option value="deptUpdate">Update Dept</option>
+                <option value="hire">Add Hire</option>
+                <option value="delete">Remove Record</option>
+            </select>
+            <div id="editFields" style="display:none;">
+                <div id="bubbleSystem">
+                    <div class="bubble-container" id="bubbleBox" onclick="document.getElementById('editTarget').focus()">
+                        <input type="text" id="editTarget" class="bubble-input" list="namesList" placeholder="Select names...">
+                    </div>
+                </div>
+                <div id="hireInputSystem" style="display:none;">
+                    <input type="text" id="hireNameInput" placeholder="New Employee Full Name">
+                    <select id="hireJobLevelInput"></select>
+                </div>
+                <input type="text" id="editExtra" list="destList" placeholder="Destination...">
+                <button class="btn" style="background:#f59e0b; width:100%; margin-top:8px;" onclick="runEdit()">Execute Change</button>
+            </div>
+        </div>
     </div>
 </div>
 
 <div class="chart-container"></div>
-<datalist id="namesList"></datalist><datalist id="dynamicList"></datalist>
+<datalist id="namesList"></datalist><datalist id="dynamicList"></datalist><datalist id="destList"></datalist>
 
 <script>
     Chart.register(ChartDataLabels);
     let chart = new d3.OrgChart().container('.chart-container');
     let allData = [], currentViewData = [], deptColors = {}, mainChartInstance = null;
-    let currentDrillMode = 'headcount', currentDrillTarget = null;
+    let currentDrillMode = 'headcount', selectedTags = [];
     const colorPalette = ['#2563eb', '#16a34a', '#dc2626', '#f59e0b', '#7c3aed', '#db2777', '#0891b2', '#ea580c', '#65a30d', '#4f46e5'];
 
     function toggleUI() { document.body.classList.toggle('body-controls-hidden'); setTimeout(() => { if(allData.length > 0) chart.render().fit(); }, 400); }
     function toggleDashboard() { document.getElementById('analyticsDashboard').classList.toggle('open'); }
     function closeSpotlight() { document.getElementById('employeeSpotlight').style.display = 'none'; }
-    
-    // THE UNBREAKABLE SPOTLIGHT TRIGGER
+    function toggleFilterFields() { document.getElementById('filterInputContainer').style.display = (document.getElementById('filterMode').value === 'none') ? 'none' : 'block'; }
+
+    // Bubble Selection Engine
+    const editTarget = document.getElementById('editTarget');
+    editTarget.addEventListener('input', function(e) {
+        const val = e.target.value;
+        const emp = allData.find(d => d.id === val);
+        if (emp && !selectedTags.includes(val)) {
+            selectedTags.push(val);
+            renderTags();
+            e.target.value = "";
+        }
+    });
+
+    function renderTags() {
+        const container = document.getElementById('bubbleBox');
+        container.querySelectorAll('.tag-bubble').forEach(b => b.remove());
+        selectedTags.forEach(tag => {
+            const b = document.createElement('div'); b.className = 'tag-bubble';
+            b.innerHTML = `${tag} <span class="tag-remove" onclick="removeTag('${tag}')">×</span>`;
+            container.insertBefore(b, editTarget);
+        });
+    }
+
+    window.removeTag = function(id) { selectedTags = selectedTags.filter(t => t !== id); renderTags(); };
+
     window.spotlightById = function(id) {
         const emp = allData.find(d => d.id === id);
         if (!emp) return;
@@ -155,9 +206,74 @@
         document.getElementById('employeeSpotlight').style.display = 'block';
     };
 
-    function cleanSalary(val) { if (!val) return 0; return parseFloat(String(val).replace(/[$,]/g, "")) || 0; }
-    function parseRating(val) { if (!val || String(val).trim() === "" || String(val) === "NaN") return "NR"; let m = String(val).match(/\d/); return m ? parseInt(m[0]) : "NR"; }
-    
+    function focusEmployee(name) {
+        if (!name || allData.length === 0) return;
+        const target = allData.find(d => d.id === name);
+        if (target) {
+            chart.clearHighlighting();
+            chart.setHighlighted(target.id).setCentered(target.id).render();
+            window.spotlightById(target.id);
+        }
+    }
+
+    function toggleEditFields() {
+        const mode = document.getElementById('editMode').value;
+        const fields = document.getElementById('editFields');
+        const extra = document.getElementById('editExtra');
+        const dest = document.getElementById('destList');
+        const bubbleSys = document.getElementById('bubbleSystem');
+        const hireSys = document.getElementById('hireInputSystem');
+        dest.innerHTML = "";
+        fields.style.display = mode === 'none' ? 'none' : 'block';
+        if (mode === 'move' || mode === 'hire') {
+            bubbleSys.style.display = mode === 'hire' ? 'none' : 'block';
+            hireSys.style.display = mode === 'hire' ? 'block' : 'none';
+            extra.style.display = 'block'; extra.placeholder = "Select Manager...";
+            const managers = [...new Set(allData.filter(d => !d.isGhost).map(d => d.id))].sort();
+            managers.forEach(m => { let o = document.createElement('option'); o.value = m; dest.appendChild(o); });
+        } else if (mode === 'deptUpdate') {
+            bubbleSys.style.display = 'block'; hireSys.style.display = 'none';
+            extra.style.display = 'block'; extra.placeholder = "Select Department...";
+            const depts = [...new Set(allData.filter(d => !d.isGhost).map(d => d.department))].sort();
+            depts.forEach(d => { let o = document.createElement('option'); o.value = d; dest.appendChild(o); });
+        } else { extra.style.display = 'none'; bubbleSys.style.display = 'block'; hireSys.style.display = 'none'; }
+    }
+
+    function runEdit() {
+        const mode = document.getElementById('editMode').value;
+        const val = document.getElementById('editExtra').value;
+        if (mode === 'hire') {
+            const hireName = document.getElementById('hireNameInput').value;
+            const jobLevel = document.getElementById('hireJobLevelInput').value;
+            const manager = allData.find(d => d.id === val);
+            allData.push({id: hireName, name: hireName, parentId: val, title: 'New Hire', department: manager ? manager.department : 'Unassigned', salary: 0, startDate: new Date().toLocaleDateString(), rating: "NR", jobLevel: jobLevel || "IC1"});
+        } else {
+            if (selectedTags.length === 0) return;
+            selectedTags.forEach(name => {
+                const target = allData.find(d => d.id === name);
+                if (!target) return;
+                if (mode === 'move') target.parentId = val;
+                else if (mode === 'deptUpdate') target.department = val;
+                else if (mode === 'delete') {
+                    allData.filter(d => d.parentId === target.id).forEach(r => r.parentId = target.parentId);
+                    allData = allData.filter(d => d.id !== name);
+                }
+            });
+        }
+        resetFilter();
+    }
+
+    function resetFilter() {
+        if (allData.length === 0) return;
+        currentDrillMode = 'headcount';
+        currentViewData = JSON.parse(JSON.stringify(allData));
+        ['globalSearch', 'filterValue', 'editTarget', 'editExtra', 'dashDeptFilter', 'dashManagerFilter', 'hireNameInput', 'hireJobLevelInput'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ""; });
+        document.getElementById('filterMode').value = "none"; document.getElementById('editMode').value = "none";
+        toggleFilterFields(); toggleEditFields(); closeSpotlight(); refresh(true);
+    }
+
+    function cleanSalary(val) { return parseFloat(String(val).replace(/[$,]/g, "")) || 0; }
+    function parseRating(val) { if (!val || String(val).trim() === "") return "NR"; let m = String(val).match(/\d/); return m ? parseInt(m[0]) : "NR"; }
     function getStrategicGroup(row) {
         const lv = (row.jobLevel || "").trim().toUpperCase();
         if (lv === "C-LEVEL") return "C-Level";
@@ -167,23 +283,16 @@
     }
 
     function parseCSVRobust(text) {
-        const result = []; let row = ['']; let inQuotes = false; let i = 0;
-        text = text.replace(/^\uFEFF/, "");
+        const result = []; let row = ['']; let inQuotes = false; let i = 0; text = text.replace(/^\uFEFF/, "");
         while (i < text.length) {
             let char = text[i]; let next = text[i+1];
             if (char === '"') { if (inQuotes && next === '"') { row[row.length-1] += '"'; i++; } else { inQuotes = !inQuotes; } }
             else if (char === ',' && !inQuotes) { row.push(''); }
             else if ((char === '\r' || char === '\n') && !inQuotes) { if (row.length > 1 || row[0] !== '') result.push(row); row = ['']; if (char === '\r' && next === '\n') i++; }
-            else { row[row.length-1] += char; }
-            i++;
+            else { row[row.length-1] += char; } i++;
         }
-        if (row.length > 1 || row[0] !== '') result.push(row);
-        return result;
+        if (row.length > 1 || row[0] !== '') result.push(row); return result;
     }
-
-    function setDrillDown(mode, target) { currentDrillMode = mode; currentDrillTarget = target; updateDashboardStats(currentViewData); }
-    function toggleFilterFields() { document.getElementById('filterInputContainer').style.display = (document.getElementById('filterMode').value === 'none') ? 'none' : 'block'; }
-    function toggleEditFields() { document.getElementById('editFields').style.display = (document.getElementById('editMode').value === 'none') ? 'none' : 'block'; }
 
     function applyDashFilter(mode) {
         const val = document.getElementById(mode === 'dept' ? 'dashDeptFilter' : 'dashManagerFilter').value;
@@ -198,151 +307,87 @@
         if (!val || allData.length === 0) return;
         if (mode === 'team') {
             const root = allData.find(d => d.id === val);
-            if (!root) return;
             const descendants = [root];
             function getChildren(id) { allData.forEach(d => { if (d.parentId === id) { descendants.push(d); getChildren(d.id); } }); }
             getChildren(val);
             currentViewData = JSON.parse(JSON.stringify(descendants));
             currentViewData.find(d => d.id === val).parentId = null;
+            refresh(false);
+            chart.setCentered(val).render(); // FOCUS ZOOM FOR MANAGER
         } else {
             currentViewData = JSON.parse(JSON.stringify(allData.filter(d => d.department === val)));
             const names = new Set(currentViewData.map(d => d.id));
             currentViewData.forEach(d => { if (!names.has(d.parentId)) d.parentId = "VIEW_ROOT"; });
             currentViewData.push({ id: "VIEW_ROOT", name: val, isGhost: true, parentId: null });
+            refresh(true); // FIT ALL ZOOM FOR DEPT
         }
-        refresh(true);
     }
 
-    function runEdit() {
-        const mode = document.getElementById('editMode').value;
-        const target = document.getElementById('editTarget').value;
-        if (!target) return;
-        if (mode === 'delete' && confirm(`Delete ${target}?`)) allData = allData.filter(d => d.id !== target);
-        resetFilter();
-    }
+    function setDrillDown(mode, target) { currentDrillMode = mode; updateDashboardStats(currentViewData); }
 
     function updateDashboardStats(data) {
-        const real = data.filter(d => !d.isGhost);
-        if (real.length === 0) return;
+        const real = data.filter(d => !d.isGhost); if (real.length === 0) return;
         const totalPayroll = real.reduce((acc, d) => acc + cleanSalary(d.salary), 0);
         const setEl = (id, val) => { if(document.getElementById(id)) document.getElementById(id).innerText = val; };
-        setEl('dashBasePay', "$" + Math.round(totalPayroll).toLocaleString());
-        setEl('dashBurdenPay', "$" + Math.round(totalPayroll * 1.19).toLocaleString());
-        setEl('dashAvgPay', "$" + Math.round(totalPayroll / real.length).toLocaleString());
-        
+        setEl('dashBasePay', "Base Payroll: $" + Math.round(totalPayroll).toLocaleString());
+        setEl('dashBurdenPay', "Burdened: $" + Math.round(totalPayroll * 1.19).toLocaleString());
+        setEl('dashAvgPay', "Avg Pay: $" + Math.round(totalPayroll / real.length).toLocaleString());
         const groups = { "C-Level": 0, "VP": 0, "People Managers": 0, "Individual Contributors": 0 };
         real.forEach(d => { let g = getStrategicGroup(d); if(groups[g] !== undefined) groups[g]++; });
         document.getElementById('tierList').innerHTML = Object.entries(groups).map(([k,v]) => `<div class="metric-row"><span>${k}</span><span class="metric-val">${v}</span></div>`).join('');
-
         const ratings = { 5:0, 4:0, 3:0, 2:0, 1:0, "NR": 0 };
         real.forEach(d => { let r = parseRating(d.rating); if(ratings[r] !== undefined) ratings[r]++; });
         document.getElementById('perfList').innerHTML = [5,4,3,2,1,"NR"].map(r => `<div class="metric-row"><span>Rating ${r}</span><span class="metric-val">${ratings[r]}</span></div>`).join('');
-
-        const dStats = {};
-        real.forEach(d => { dStats[d.department] = (dStats[d.department] || 0) + 1; });
+        const dStats = {}; real.forEach(d => { dStats[d.department] = (dStats[d.department] || 0) + 1; });
         document.getElementById('deptList').innerHTML = Object.entries(dStats).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `<div class="metric-row"><span>${k}</span><span class="metric-val">${v}</span></div>`).join('');
-
-        const managers = new Set(real.map(d => d.parentId).filter(p => p && p !== 'ROOT' && p !== 'VIEW_ROOT'));
-        const ratio = (managers.size > 0 ? ((real.length - 1) / managers.size).toFixed(1) : 0);
-        setEl('dashRatioVal', ratio + ":1");
-        setEl('statRatio', ratio + ":1");
-
-        const avgTenure = real.reduce((acc, d) => { const s = new Date(d.startDate); return acc + (isNaN(s) ? 0 : (new Date() - s) / (1000 * 60 * 60 * 24 * 365.25)); }, 0) / real.length;
-        setEl('dashTenureVal', avgTenure.toFixed(1) + " Yrs");
-
-        const twelveMo = new Date(); twelveMo.setFullYear(twelveMo.getFullYear() - 1);
-        setEl('dashGrowth', real.filter(d => new Date(d.startDate) >= twelveMo).length);
-
-        const deptNames = [...new Set(allData.filter(d => !d.isGhost).map(d => d.department))].sort();
-        let chartData = [], chartLabels = [], chartType = 'bar';
-
-        if (currentDrillMode === 'rating') {
-            chartType = 'pie'; chartLabels = ["Rating 5", "Rating 4", "Rating 3", "Rating 2", "Rating 1", "NR"];
-            chartData = [ratings[5], ratings[4], ratings[3], ratings[2], ratings[1], ratings["NR"]];
-        } else if (currentDrillMode === 'tier') {
-            chartLabels = ["C-Level", "VP", "People Managers", "Individual Contributors"];
-            chartData = chartLabels.map(l => groups[l]);
-        } else if (currentDrillMode === 'salary') {
-            chartLabels = deptNames; chartData = deptNames.map(dept => {
-                const emps = allData.filter(d => !d.isGhost && d.department === dept);
-                return emps.length ? Math.round(emps.reduce((a,b) => a + cleanSalary(b.salary), 0) / emps.length) : 0;
-            });
-        } else {
-            chartLabels = deptNames; chartData = deptNames.map(dept => allData.filter(d => !d.isGhost && d.department === dept).length);
-        }
-
+        const mCount = new Set(real.map(d => d.parentId).filter(p => p && p !== 'ROOT' && p !== 'VIEW_ROOT')).size;
+        setEl('dashRatioVal', (mCount > 0 ? ((real.length - 1) / mCount).toFixed(1) : 0) + ":1");
+        const sdSum = real.reduce((acc, d) => { const s = new Date(d.startDate); return acc + (isNaN(s) ? 0 : (new Date() - s) / (1000 * 60 * 60 * 24 * 365.25)); }, 0) / real.length;
+        setEl('dashTenureVal', sdSum.toFixed(1) + " Yrs");
+        setEl('dashGrowth', real.filter(d => new Date(d.startDate) >= new Date(new Date().setFullYear(new Date().getFullYear() - 1))).length);
         if (mainChartInstance) mainChartInstance.destroy();
+        const deptNames = [...new Set(allData.filter(d => !d.isGhost).map(d => d.department))].sort();
+        let chartData = currentDrillMode === 'rating' ? [ratings[5], ratings[4], ratings[3], ratings[2], ratings[1], ratings["NR"]] : 
+                        currentDrillMode === 'tier' ? ["C-Level", "VP", "People Managers", "Individual Contributors"].map(l => groups[l]) :
+                        currentDrillMode === 'salary' ? deptNames.map(dept => { const e = allData.filter(x => x.department === dept); return e.length ? Math.round(e.reduce((a,b)=>a+cleanSalary(b.salary),0)/e.length) : 0; }) :
+                        deptNames.map(dept => allData.filter(d => !d.isGhost && d.department === dept).length);
         mainChartInstance = new Chart(document.getElementById('mainDashboardChart'), {
-            type: chartType,
-            data: { labels: chartLabels, datasets: [{ data: chartData, backgroundColor: chartType === 'bar' ? '#38bdf8' : ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#7f1d1d', '#94a3b8'], borderRadius: 6 }] },
-            options: { 
-                plugins: { 
-                    legend: { display: chartType === 'pie', position: 'bottom', labels: { color: '#fff' } },
-                    datalabels: {
-                        color: '#fff', font: { weight: 'bold', size: chartType === 'pie' ? 14 : 11 },
-                        formatter: (value, ctx) => { if (value === 0) return ''; let sum = ctx.dataset.data.reduce((a, b) => a + b, 0); let perc = ((value / sum) * 100).toFixed(1) + "%"; return currentDrillMode === 'salary' ? "$" + value.toLocaleString() : value + " (" + perc + ")"; }
-                    }
-                }, 
-                responsive: true, maintainAspectRatio: false,
-                scales: chartType === 'bar' ? { y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } : {}
-            },
-            plugins: [ChartDataLabels]
+            type: currentDrillMode === 'rating' ? 'pie' : 'bar',
+            data: { labels: currentDrillMode === 'rating' ? ["5","4","3","2","1","NR"] : currentDrillMode === 'tier' ? ["C-Level","VP","Managers","ICs"] : deptNames, 
+                    datasets: [{ data: chartData, backgroundColor: currentDrillMode === 'rating' ? ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#7f1d1d', '#94a3b8'] : '#38bdf8', borderRadius: 6 }] },
+            options: { plugins: { legend: { display: currentDrillMode === 'rating', labels: { color: '#fff' } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 14 }, formatter: (v, ctx) => { let sum = ctx.dataset.data.reduce((a,b)=>a+b,0); return currentDrillMode === 'salary' ? "$" + v.toLocaleString() : v + " (" + ((v/sum)*100).toFixed(1) + "%)"; } } }, responsive: true, maintainAspectRatio: false, scales: currentDrillMode === 'rating' ? {} : { y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } }
         });
-
-        setEl('statHC', real.length);
-        setEl('statPayroll', "$" + Math.round(totalPayroll).toLocaleString());
+        setEl('statHC', real.length); setEl('statRatio', (mCount > 0 ? ((real.length - 1) / mCount).toFixed(1) : 0) + ":1"); setEl('statPayroll', "$" + Math.round(totalPayroll).toLocaleString());
     }
 
     function refresh(fitView = false) {
         if (currentViewData.length === 0) return;
-        const map = {}; currentViewData.forEach(d => { map[d.id] = d; d._totalHeadcount = 0; });
-        currentViewData.forEach(d => { let p = map[d.parentId]; while (p) { p._totalHeadcount++; p = map[p.parentId]; } });
+        const map = {}; currentViewData.forEach(d => { map[d.id] = d; d._hc = 0; });
+        currentViewData.forEach(d => { let p = map[d.parentId]; while (p) { p._hc++; p = map[p.parentId]; } });
         updateDashboardStats(currentViewData);
-        updateAutocomplete();
-        
-        chart.data(currentViewData).nodeWidth(d => 220).nodeHeight(d => 90).compact(true)
-            .nodeContent(d => {
-                if (d.data.isGhost) return `<div style="padding:15px; background:#0f172a; color:white; border-radius:12px; text-align:center;"><div style="font-weight:800; font-size:14px;">${d.data.name}</div></div>`;
-                const boxColor = deptColors[d.data.department] || '#cbd5e1';
-                // ATTACHING DIRECT ONCLICK TO NODE HTML
-                return `<div onclick="window.spotlightById('${d.data.id}')" style="position:relative; cursor:pointer; padding:12px; background:white; border-left: 6px solid ${boxColor}; border-radius:12px; height:66px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    ${d.data._totalHeadcount > 0 ? `<div class="node-badge" style="position:absolute; top:-10px; right:-10px; background:#0f172a; color:white; border-radius:50%; min-width:20px; height:20px; font-size:10px; display:flex; align-items:center; justify-content:center; border:2px solid white;">${d.data._totalHeadcount}</div>` : ''}
-                    <div style="font-weight:700; font-size:12px; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.data.name}</div>
-                    <div style="font-size:10px; color:#64748b; margin-top:2px;">${d.data.title}</div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                        <div style="font-size:9px; color:${boxColor}; background:${boxColor}15; padding:2px 6px; border-radius:6px; font-weight:800;">${d.data.department}</div>
-                        <span style="font-size:9px; color:#94a3b8; font-weight:800;">${d.data.jobLevel}</span>
-                    </div>
-                </div>`;
-            }).render();
-        if (fitView) chart.fit();
+        const managers = [...new Set(allData.filter(d => allData.some(e => e.parentId === d.id)).map(m => m.id))].sort();
+        const depts = [...new Set(allData.filter(d => !d.isGhost).map(d => d.department))].sort();
+        const levels = [...new Set(allData.filter(d => !d.isGhost).map(d => d.jobLevel))].sort();
+        document.getElementById('dashManagerFilter').innerHTML = '<option value="">Filter Manager...</option>' + managers.map(m => `<option value="${m}">${m}</option>`).join('');
+        document.getElementById('dashDeptFilter').innerHTML = '<option value="">Filter Dept...</option>' + depts.map(d => `<option value="${d}">${d}</option>`).join('');
+        document.getElementById('namesList').innerHTML = allData.filter(d => !d.isGhost).map(d => `<option value="${d.id}"></option>`).join('');
+        document.getElementById('dynamicList').innerHTML = [...depts, ...managers].map(v => `<option value="${v}"></option>`).join('');
+        document.getElementById('hireJobLevelInput').innerHTML = '<option value="">Job Level...</option>' + levels.map(l => `<option value="${l}">${l}</option>`).join('');
+        chart.data(currentViewData).nodeWidth(d => 220).nodeHeight(d => 90).compact(true).nodeContent(d => {
+            if (d.data.isGhost) return `<div style="padding:15px; background:#0f172a; color:white; border-radius:12px; text-align:center;">Organization View</div>`;
+            const boxColor = deptColors[d.data.department] || '#cbd5e1';
+            return `<div onclick="window.spotlightById('${d.data.id}')" style="position:relative; cursor:pointer; padding:12px; background:white; border-left: 6px solid ${boxColor}; border-radius:12px; height:66px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                ${d.data._hc > 0 ? `<div class="node-badge" style="position:absolute; top:-10px; right:-10px; background:#0f172a; color:white; border-radius:50%; width:20px; height:20px; font-size:10px; display:flex; align-items:center; justify-content:center; border:2px solid white;">${d.data._hc}</div>` : ''}
+                <div style="font-weight:700; font-size:12px; color:#0f172a;">${d.data.name}</div>
+                <div style="font-size:10px; color:#64748b;">${d.data.title}</div>
+                <div style="display:flex; justify-content:space-between; margin-top:8px;"><div style="font-size:9px; color:${boxColor}; background:${boxColor}15; padding:2px 6px; border-radius:6px; font-weight:800;">${d.data.department}</div><span style="font-size:9px; color:#94a3b8; font-weight:800;">${d.data.jobLevel || ''}</span></div>
+            </div>`;
+        }).render(); if (fitView) chart.fit();
     }
-
-    function updateAutocomplete() {
-        const dDF = document.getElementById('dashDeptFilter'), dMF = document.getElementById('dashManagerFilter'), nL = document.getElementById('namesList'), dL = document.getElementById('dynamicList');
-        const depts = new Set(), managers = new Set();
-        nL.innerHTML = "";
-        allData.filter(d => !d.isGhost).forEach(d => {
-            if (d.department) depts.add(d.department);
-            if (allData.some(e => e.parentId === d.name)) managers.add(d.name);
-            let opt = document.createElement('option'); opt.value = d.name; nL.appendChild(opt);
-        });
-        dDF.innerHTML = '<option value="">Quick Dept Filter...</option>';
-        dMF.innerHTML = '<option value="">Quick Manager Filter...</option>';
-        depts.forEach(d => { let o = document.createElement('option'); o.value = d; o.innerText = d; dDF.appendChild(o); });
-        managers.forEach(m => { let o = document.createElement('option'); o.value = m; o.innerText = m; dMF.appendChild(o); });
-        // Update Datalist for main search
-        dL.innerHTML = "";
-        depts.forEach(d => { let o = document.createElement('option'); o.value = d; dL.appendChild(o); });
-        allData.filter(d => !d.isGhost).forEach(d => { let o = document.createElement('option'); o.value = d.name; dL.appendChild(o); });
-    }
-
-    function updateDeptColors(data) { const depts = [...new Set(data.filter(d => d.department).map(d => d.department))]; depts.forEach((d, i) => { deptColors[d] = colorPalette[i % colorPalette.length]; }); }
-    function resetFilter() { if (allData.length === 0) return; currentDrillMode = 'headcount'; currentViewData = JSON.parse(JSON.stringify(allData)); refresh(true); closeSpotlight(); }
 
     function downloadCSV() {
-        let csv = "Full Name,Title,Manager (name),Department,Salary,Job Level,Start Date,2025 Mid-Year Rating,Work Email,City,State/Cty.\n";
-        allData.filter(d => !d.isGhost).forEach(d => { csv += `"${d.name}","${d.title}","${d.parentId === 'ROOT' ? '' : d.parentId}","${d.department}","${d.salary}","${d.jobLevel}","${d.startDate}","${d.rating}","${d.email}","${d.city}","${d.state}"\n`; });
+        let csv = "Full Name,Title,Manager (name),Department,Salary,Job Level,Start Date,2025 Mid-Year Rating,Work Email\n";
+        allData.filter(d => !d.isGhost).forEach(d => { csv += `"${d.name}","${d.title}","${d.parentId === 'ROOT' ? '' : d.parentId}","${d.department}","${d.salary}","${d.jobLevel}","${d.startDate}","${d.rating}","${d.email}"\n`; });
         const blob = new Blob([csv], { type: 'text/csv' });
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'org_export.csv'; a.click();
     }
@@ -351,16 +396,19 @@
         const reader = new FileReader();
         reader.onload = function(event) {
             const rows = parseCSVRobust(event.target.result);
-            const headers = rows[0].map(h => h.trim().toLowerCase());
-            const iF = headers.indexOf('full name'), iT = headers.indexOf('title'), iM = headers.indexOf('manager (name)'), iD = headers.indexOf('department'), iS = headers.indexOf('salary'), iR = headers.indexOf('2025 mid-year rating'), iL = headers.indexOf('job level'), iE = headers.indexOf('work email'), iC = headers.indexOf('city'), iSt = headers.indexOf('state/cty.'), iDte = headers.indexOf('start date');
+            const h = rows[0].map(h => h.trim().toLowerCase());
+            const iF = h.indexOf('full name'), iT = h.indexOf('title'), iM = h.indexOf('manager (name)'), iD = h.indexOf('department'), iS = h.indexOf('salary'), iR = h.indexOf('2025 mid-year rating'), iL = h.indexOf('job level'), iE = h.indexOf('work email'), iDte = h.indexOf('start date');
             allData = rows.slice(1).filter(c => c[iF]).map(c => ({
                 id: c[iF].trim(), name: c[iF].trim(), title: iT !== -1 ? c[iT] : "", parentId: (iM !== -1 && c[iM]) ? c[iM].trim() : "ROOT", department: iD !== -1 ? c[iD].trim() : "Unassigned",
-                salary: iS !== -1 ? c[iS] : 0, rating: iR !== -1 ? c[iR] : null, jobLevel: iL !== -1 ? c[iL] : "", email: iE !== -1 ? c[iE] : "N/A", city: iC !== -1 ? c[iC] : "", state: iSt !== -1 ? c[iSt] : "", startDate: iDte !== -1 ? c[iDte] : ""
+                salary: iS !== -1 ? c[iS] : 0, rating: iR !== -1 ? c[iR] : null, jobLevel: iL !== -1 ? c[iL] : "IC1", email: iE !== -1 ? c[iE] : "N/A", startDate: iDte !== -1 ? c[iDte] : ""
             }));
             const names = new Set(allData.map(d => d.id));
             allData.forEach(d => { if (d.parentId !== "ROOT" && !names.has(d.parentId)) d.parentId = "ROOT"; });
             allData.push({ id: "ROOT", name: "Organization", isGhost: true, parentId: null });
-            updateDeptColors(allData); resetFilter();
+            currentViewData = JSON.parse(JSON.stringify(allData));
+            const dSet = [...new Set(allData.filter(d => d.department).map(d => d.department))];
+            dSet.forEach((d, i) => { deptColors[d] = colorPalette[i % colorPalette.length]; });
+            resetFilter();
         };
         reader.readAsText(e.target.files[0]);
     });
