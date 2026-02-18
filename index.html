@@ -2,24 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>HR Strategic Executive Suite - Structure Focus</title>
+    <title>HR Strategic Executive Suite - Financial Analytics</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-org-chart@2.6.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-flextree@2.1.2/build/d3-flextree.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background: #f8fafc; padding: 20px; color: #1e293b; margin: 0; overflow-x: hidden; }
         
+        /* Stats Bar Adjusted for 5 Items */
         #statsBar { 
-            display: flex; gap: 40px; margin-bottom: 20px; 
-            background: #1e293b; color: white; padding: 18px 30px; 
+            display: flex; gap: 30px; margin-bottom: 20px; 
+            background: #1e293b; color: white; padding: 18px 25px; 
             border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            justify-content: space-between;
         }
-        .stat-item { display: flex; flex-direction: column; }
-        .stat-value { font-size: 22px; font-weight: 800; color: #38bdf8; }
-        .stat-label { font-size: 10px; text-transform: uppercase; opacity: 0.7; }
+        .stat-item { display: flex; flex-direction: column; min-width: 120px; }
+        .stat-value { font-size: 20px; font-weight: 800; color: #38bdf8; white-space: nowrap; }
+        .stat-label { font-size: 9px; text-transform: uppercase; opacity: 0.7; margin-bottom: 2px; letter-spacing: 0.03em; }
 
         #analyticsSidebar {
-            position: fixed; right: -400px; top: 0; width: 340px; height: 100vh;
+            position: fixed; right: -410px; top: 0; width: 340px; height: 100vh;
             background: white; border-left: 1px solid #e2e8f0; box-shadow: -10px 0 30px rgba(0,0,0,0.1);
             z-index: 3000; padding: 30px; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             overflow-y: auto; visibility: hidden;
@@ -69,10 +71,11 @@
 </div>
 
 <div id="statsBar">
-    <div class="stat-item"><span class="stat-label">View Headcount</span><span id="statHC" class="stat-value">0</span></div>
-    <div class="stat-item"><span class="stat-label">Avg. Span of Control</span><span id="statRatio" class="stat-value">0:1</span></div>
-    <div class="stat-item"><span class="stat-label">View Payroll</span><span id="statPayroll" class="stat-value">$0</span></div>
-    <div class="stat-item"><span class="stat-label">Status</span><span style="color:#38bdf8; font-weight:800; font-size:22px;">Active</span></div>
+    <div class="stat-item"><span class="stat-label">Headcount</span><span id="statHC" class="stat-value">0</span></div>
+    <div class="stat-item"><span class="stat-label">Avg. Span</span><span id="statRatio" class="stat-value">0:1</span></div>
+    <div class="stat-item"><span class="stat-label">Base Payroll</span><span id="statPayroll" class="stat-value">$0</span></div>
+    <div class="stat-item"><span class="stat-label">Burdened Cost (+19%)</span><span id="statBurden" class="stat-value">$0</span></div>
+    <div class="stat-item"><span class="stat-label">Status</span><span id="statStatus" style="color:#38bdf8; font-weight:800; font-size:20px;">Ready</span></div>
 </div>
 
 <div id="controls">
@@ -87,7 +90,7 @@
 
     <div class="command-grid">
         <div class="panel">
-            <span class="panel-title">1. Filter View</span>
+            <span style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase;">1. Filter View</span>
             <div class="input-box" style="margin-top:10px">
                 <div style="flex:1"><label>Mode</label><select id="filterMode" onchange="toggleFilterFields()"><option value="none">Select...</option><option value="team">By Manager</option><option value="dept">By Department</option><option value="title">By Job Title</option></select></div>
                 <div id="filterInputContainer" style="display:none; flex:1"><label id="filterLabel">Value</label><input type="text" id="filterValue" list="dynamicList"></div>
@@ -95,7 +98,7 @@
             </div>
         </div>
         <div class="panel">
-            <span class="panel-title">2. Org Management</span>
+            <span style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase;">2. Org Management</span>
             <div class="input-box" style="margin-top:10px">
                 <div style="flex:1"><label>Action</label><select id="editMode" onchange="toggleEditFields()"><option value="none">Select...</option><option value="move">Update Manager</option><option value="deptUpdate">Update Dept</option><option value="bulk">Bulk Dept Change</option><option value="hire">Add Hire</option><option value="delete">Remove</option></select></div>
                 <div id="editTargetContainer" style="display:none; flex:1"><label id="editTargetLabel">Target</label><input type="text" id="editTarget" list="namesList"></div>
@@ -122,7 +125,6 @@
     function cleanSalary(val) { if (!val) return 0; return parseFloat(String(val).replace(/[$,]/g, "")) || 0; }
     function parseRating(val) { if (!val || String(val).trim() === "") return "NR"; let m = String(val).match(/\d/); return m ? parseInt(m[0]) : "NR"; }
 
-    // Logic to group levels into buckets
     function categorizeLevel(lv) {
         if (!lv || lv.trim() === "") return "Unassigned";
         const l = lv.toUpperCase();
@@ -130,7 +132,7 @@
         if (l.startsWith("VP") || l.includes("VICE PRESIDENT")) return "VP";
         if (l.startsWith("M") || l.includes("MANAGER") || l.includes("DIRECTOR") || l.includes("HEAD")) return "M";
         if (l.startsWith("IC") || l.includes("CONTRIBUTOR") || l.includes("ASSOCIATE") || l.includes("ANALYST") || l.includes("ENGINEER")) return "IC";
-        return "IC"; // Default fallback
+        return "IC";
     }
 
     function toggleFilterFields() {
@@ -174,6 +176,7 @@
             currentViewData.forEach(d => { if (!names.has(d.parentId)) d.parentId = "VIEW_ROOT"; });
             currentViewData.push({ id: "VIEW_ROOT", name: val + " View", isGhost: true, parentId: null });
         }
+        document.getElementById('statStatus').innerText = "Filtered";
         refresh();
     }
 
@@ -192,17 +195,18 @@
         if (real.length === 0) return document.getElementById('dashboardContent').innerHTML = "<p>No data.</p>";
         
         const totalPayroll = real.reduce((acc, d) => acc + cleanSalary(d.salary), 0);
+        const burdenedPayroll = totalPayroll * 1.19;
         const avgSalary = totalPayroll / real.length;
         
         const ratings = { 5:0, 4:0, 3:0, 2:0, 1:0, "NR":0 };
         real.forEach(d => { let r = parseRating(d.rating); ratings[r]++; });
 
-        // Overhauled Job Level Analysis (Bucket Grouping)
         const levels = { "C-Level": 0, "VP": 0, "M": 0, "IC": 0, "Unassigned": 0 };
-        real.forEach(d => {
-            let cat = categorizeLevel(d.jobLevel);
-            levels[cat]++;
-        });
+        real.forEach(d => { levels[categorizeLevel(d.jobLevel)]++; });
+
+        const deptStats = {};
+        real.forEach(d => { const dept = d.department || "Unassigned"; deptStats[dept] = (deptStats[dept] || 0) + 1; });
+        const sortedDepts = Object.entries(deptStats).sort((a,b) => b[1] - a[1]);
 
         const now = new Date();
         const avgTenure = real.reduce((acc, d) => {
@@ -210,21 +214,28 @@
             return acc + (isNaN(start) ? 0 : (now - start) / (1000 * 60 * 60 * 24 * 365.25));
         }, 0) / real.length;
 
+        // UI Updates for Stats Bar
         document.getElementById('statHC').innerText = real.length;
         document.getElementById('statPayroll').innerText = "$" + Math.round(totalPayroll).toLocaleString();
+        document.getElementById('statBurden').innerText = "$" + Math.round(burdenedPayroll).toLocaleString();
         const managers = new Set(real.map(d => d.parentId).filter(p => p && p !== 'ROOT' && p !== 'VIEW_ROOT'));
         document.getElementById('statRatio').innerText = (managers.size > 0 ? ((real.length - 1) / managers.size).toFixed(1) : 0) + ":1";
 
+        // Dashboard HTML
         document.getElementById('dashboardContent').innerHTML = `
             <div class="dashboard-section">
                 <div class="dashboard-h3">View Financials</div>
-                <div class="metric-row"><span>Total Payroll</span><span class="metric-val">$${Math.round(totalPayroll).toLocaleString()}</span></div>
-                <div class="metric-row"><span>Avg. Salary</span><span class="metric-val">$${Math.round(avgSalary).toLocaleString()}</span></div>
+                <div class="metric-row"><span>Base Payroll</span><span class="metric-val">$${Math.round(totalPayroll).toLocaleString()}</span></div>
+                <div class="metric-row"><span>Fully Burdened (1.19x)</span><span class="metric-val">$${Math.round(burdenedPayroll).toLocaleString()}</span></div>
+                <div class="metric-row"><span>Avg. Base Salary</span><span class="metric-val">$${Math.round(avgSalary).toLocaleString()}</span></div>
             </div>
             <div class="dashboard-section">
-                <div class="dashboard-h3">Performance Talent Density</div>
-                ${[5,4,3,2,1].map(r => `<div class="metric-row"><span>Rating ${r}</span><span class="metric-val">${ratings[r]} employees</span></div>`).join('')}
-                <div class="metric-row"><span>Not Yet Rated</span><span class="metric-val">${ratings["NR"]} employees</span></div>
+                <div class="dashboard-h3">Department Overview</div>
+                ${sortedDepts.map(([name, count]) => `
+                    <div class="metric-row">
+                        <span>${name}</span>
+                        <span class="metric-val">${count} employees</span>
+                    </div>`).join('')}
             </div>
             <div class="dashboard-section">
                 <div class="dashboard-h3">Job Level Analysis</div>
@@ -232,7 +243,11 @@
                 <div class="metric-row"><span>VP</span><span class="metric-val">${levels["VP"]}</span></div>
                 <div class="metric-row"><span>M (Manager/Director)</span><span class="metric-val">${levels["M"]}</span></div>
                 <div class="metric-row"><span>IC (Individual Contributor)</span><span class="metric-val">${levels["IC"]}</span></div>
-                <div class="metric-row"><span>Unassigned</span><span class="metric-val">${levels["Unassigned"]}</span></div>
+            </div>
+            <div class="dashboard-section">
+                <div class="dashboard-h3">Performance Density</div>
+                ${[5,4,3,2,1].map(r => `<div class="metric-row"><span>Rating ${r}</span><span class="metric-val">${ratings[r]} employees</span></div>`).join('')}
+                <div class="metric-row"><span>Not Yet Rated</span><span class="metric-val">${ratings["NR"]} employees</span></div>
             </div>
             <div class="dashboard-section">
                 <div class="dashboard-h3">Tenure</div>
@@ -252,7 +267,7 @@
         depts.forEach((d, i) => { deptColors[d] = colorPalette[i % colorPalette.length]; });
     }
 
-    function resetFilter() { if (allData.length === 0) return; currentViewData = JSON.parse(JSON.stringify(allData)); refresh(); }
+    function resetFilter() { if (allData.length === 0) return; document.getElementById('statStatus').innerText = "Full Org"; currentViewData = JSON.parse(JSON.stringify(allData)); refresh(); }
 
     function refresh() {
         if (currentViewData.length === 0) return;
