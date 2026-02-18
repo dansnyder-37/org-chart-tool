@@ -2,196 +2,296 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Org Chart - Fixed Headcount Version</title>
+    <title>HR Strategic Executive Suite - Structure Focus</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-org-chart@2.6.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-flextree@2.1.2/build/d3-flextree.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background: #f1f5f9; padding: 20px; color: #1e293b; }
-        #controls { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid #e2e8f0; }
-        .chart-container { height: 60vh; background: white; border-radius: 12px; border: 1px solid #cbd5e1; }
-        .section-title { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; margin-top: 15px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 10px; }
-        label { font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 5px; }
-        input { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 13px; }
-        .btn { padding: 10px 14px; color: white; border: none; cursor: pointer; border-radius: 8px; font-weight: 600; font-size: 12px; transition: transform 0.1s; }
-        .btn-blue { background: #2563eb; }
-        .btn-red { background: #dc2626; }
-        .btn-orange { background: #f59e0b; }
-        .btn-purple { background: #7c3aed; }
-        .btn-gray { background: #64748b; }
-        .btn-green { background: #16a34a; }
-        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; padding: 20px; color: #1e293b; margin: 0; overflow-x: hidden; }
         
-        .headcount-badge {
-            position: absolute; top: -12px; right: -12px; background: #2563eb; color: white;
-            border-radius: 50%; min-width: 26px; height: 26px; font-size: 11px; font-weight: 800;
-            display: flex; align-items: center; justify-content: center; border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;
+        #statsBar { 
+            display: flex; gap: 40px; margin-bottom: 20px; 
+            background: #1e293b; color: white; padding: 18px 30px; 
+            border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+        .stat-item { display: flex; flex-direction: column; }
+        .stat-value { font-size: 22px; font-weight: 800; color: #38bdf8; }
+        .stat-label { font-size: 10px; text-transform: uppercase; opacity: 0.7; }
+
+        #analyticsSidebar {
+            position: fixed; right: -400px; top: 0; width: 340px; height: 100vh;
+            background: white; border-left: 1px solid #e2e8f0; box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+            z-index: 3000; padding: 30px; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            overflow-y: auto; visibility: hidden;
+        }
+        #analyticsSidebar.open { right: 0; visibility: visible; }
+        .close-sidebar { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 20px; font-weight: bold; color: #94a3b8; border: none; background: none; }
+        
+        .dashboard-section { margin-bottom: 25px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; }
+        .dashboard-h3 { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 15px; letter-spacing: 0.05em; }
+        .metric-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+        .metric-val { font-weight: 700; color: #1e293b; }
+
+        .btn-float { position: fixed; bottom: 30px; z-index: 2000; padding: 12px 24px; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-weight: 700; font-size: 12px; }
+        #uiToggle { left: 30px; background: #1e293b; color: white; }
+        #dashToggle { right: 30px; background: #2563eb; color: white; }
+
+        #controls { background: white; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+        .command-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel { background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; }
+        label { font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px; }
+        select, input { padding: 9px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; width: 100%; box-sizing: border-box; background: white;}
+        
+        .btn { padding: 10px 16px; color: white; border: none; cursor: pointer; border-radius: 8px; font-weight: 600; font-size: 12px; }
+        .btn-purple { background: #7c3aed; }
+        .btn-orange { background: #f59e0b; }
+        .btn-green { background: #16a34a; }
+
+        .chart-container { height: 60vh; background: white; border-radius: 12px; border: 1px solid #cbd5e1; }
+        .controls-hidden #controls, .controls-hidden #statsBar { display: none; }
+        .controls-hidden .chart-container { height: 95vh; }
+
+        .headcount-badge { position: absolute; top: -12px; right: -12px; color: white; border-radius: 50%; min-width: 24px; height: 24px; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid white; z-index: 10; }
+        .perf-rating { font-size: 10px; font-weight: 800; padding: 2px 5px; border-radius: 4px; margin-left: 5px; }
     </style>
 </head>
-<body>
+<body id="mainBody">
+
+<button id="uiToggle" class="btn-float" onclick="toggleUI()">Show/Hide Controls</button>
+<button id="dashToggle" class="btn-float" onclick="toggleDashboard()">Executive Dashboard</button>
+
+<div id="analyticsSidebar">
+    <button class="close-sidebar" onclick="toggleDashboard()">×</button>
+    <h2 style="margin-top:0">Executive Overview</h2>
+    <div id="dashboardContent">
+        <p style="color:#64748b; font-size:12px;">Waiting for data view...</p>
+    </div>
+</div>
+
+<div id="statsBar">
+    <div class="stat-item"><span class="stat-label">View Headcount</span><span id="statHC" class="stat-value">0</span></div>
+    <div class="stat-item"><span class="stat-label">Avg. Span of Control</span><span id="statRatio" class="stat-value">0:1</span></div>
+    <div class="stat-item"><span class="stat-label">View Payroll</span><span id="statPayroll" class="stat-value">$0</span></div>
+    <div class="stat-item"><span class="stat-label">Status</span><span style="color:#38bdf8; font-weight:800; font-size:22px;">Active</span></div>
+</div>
 
 <div id="controls">
-    <div class="toolbar">
-        <h2 style="margin:0">Org Chart Master Editor</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="margin:0">HR Strategic Operating System</h2>
         <div style="display:flex; gap:8px">
-            <input type="file" id="fileInput" style="width: auto;" accept=".csv" />
+            <input type="file" id="fileInput" accept=".csv" />
             <button class="btn btn-green" onclick="downloadCSV()">Export CSV</button>
-            <button class="btn btn-gray" onclick="chart.exportImg()">Save Image</button>
-            <button class="btn btn-gray" style="background:#475569" onclick="resetFilter()">Reset View</button>
+            <button class="btn btn-gray" style="background:#475569; color:white; padding:10px 16px; border-radius:8px; border:none; cursor:pointer;" onclick="resetFilter()">Reset View</button>
         </div>
     </div>
 
-    <div class="section-title">1. Search & Filter</div>
-    <div class="grid">
-        <div>
-            <label>Target Employee</label>
-            <input type="text" id="targetEmployee" list="namesList" placeholder="Select existing person...">
+    <div class="command-grid">
+        <div class="panel">
+            <span class="panel-title">1. Filter View</span>
+            <div class="input-box" style="margin-top:10px">
+                <div style="flex:1"><label>Mode</label><select id="filterMode" onchange="toggleFilterFields()"><option value="none">Select...</option><option value="team">By Manager</option><option value="dept">By Department</option><option value="title">By Job Title</option></select></div>
+                <div id="filterInputContainer" style="display:none; flex:1"><label id="filterLabel">Value</label><input type="text" id="filterValue" list="dynamicList"></div>
+                <button class="btn btn-purple" id="filterBtn" style="display:none" onclick="runFilter()">Apply View</button>
+            </div>
         </div>
-        <div>
-            <label>Department to View</label>
-            <input type="text" id="targetDept" list="deptsList" placeholder="Select department...">
-        </div>
-        <div style="display: flex; align-items: end; gap: 5px;">
-            <button class="btn btn-purple" onclick="focusOnTeam()">Focus Team</button>
-            <button class="btn btn-purple" style="background:#4338ca" onclick="focusOnDept()">Focus Dept</button>
-        </div>
-    </div>
-
-    <div class="section-title">2. Modify Existing Employee</div>
-    <div class="grid" style="grid-template-columns: 1fr 1fr 2fr;">
-        <div>
-            <label>New Manager</label>
-            <input type="text" id="targetManager" list="namesList" placeholder="Search new boss...">
-        </div>
-        <div>
-            <label>New Department</label>
-            <input type="text" id="newDeptInput" list="deptsList" placeholder="New dept name...">
-        </div>
-        <div style="display: flex; align-items: end; gap: 5px;">
-            <button class="btn btn-orange" onclick="actionMove()">Move</button>
-            <button class="btn btn-orange" style="background:#f97316" onclick="actionUpdateDept()">Update Dept</button>
-            <button class="btn btn-red" onclick="actionDelete()">Delete</button>
+        <div class="panel">
+            <span class="panel-title">2. Org Management</span>
+            <div class="input-box" style="margin-top:10px">
+                <div style="flex:1"><label>Action</label><select id="editMode" onchange="toggleEditFields()"><option value="none">Select...</option><option value="move">Update Manager</option><option value="deptUpdate">Update Dept</option><option value="bulk">Bulk Dept Change</option><option value="hire">Add Hire</option><option value="delete">Remove</option></select></div>
+                <div id="editTargetContainer" style="display:none; flex:1"><label id="editTargetLabel">Target</label><input type="text" id="editTarget" list="namesList"></div>
+                <div id="editExtraContainer" style="display:none; flex:1"><label id="editExtraLabel">Input</label><input type="text" id="editExtra"></div>
+                <button class="btn btn-orange" id="editBtn" style="display:none" onclick="runEdit()">Execute</button>
+            </div>
         </div>
     </div>
-
-    <div class="section-title">3. Hire New Employee</div>
-    <div class="grid">
-        <input type="text" id="newName" placeholder="Full Name">
-        <input type="text" id="newTitle" placeholder="Job Title">
-        <button class="btn btn-blue" onclick="actionAdd()">+ Add to Manager Above</button>
-    </div>
-
-    <datalist id="namesList"></datalist>
-    <datalist id="deptsList"></datalist>
 </div>
 
 <div class="chart-container"></div>
+<datalist id="namesList"></datalist><datalist id="deptsList"></datalist><datalist id="titlesList"></datalist><datalist id="dynamicList"></datalist>
 
 <script>
     let chart = new d3.OrgChart().container('.chart-container');
     let allData = [];
+    let currentViewData = [];
+    let deptColors = {};
+    const colorPalette = ['#2563eb', '#16a34a', '#dc2626', '#f59e0b', '#7c3aed', '#db2777', '#0891b2', '#ea580c', '#65a30d', '#4f46e5'];
 
-    // --- Fixed Headcount Calculation ---
+    function toggleUI() { document.getElementById('mainBody').classList.toggle('controls-hidden'); setTimeout(() => { if(allData.length > 0) chart.render().fit(); }, 350); }
+    function toggleDashboard() { document.getElementById('analyticsSidebar').classList.toggle('open'); }
+
+    function cleanSalary(val) { if (!val) return 0; return parseFloat(String(val).replace(/[$,]/g, "")) || 0; }
+    function parseRating(val) { if (!val || String(val).trim() === "") return "NR"; let m = String(val).match(/\d/); return m ? parseInt(m[0]) : "NR"; }
+
+    // Logic to group levels into buckets
+    function categorizeLevel(lv) {
+        if (!lv || lv.trim() === "") return "Unassigned";
+        const l = lv.toUpperCase();
+        if (l.startsWith("C") || l.includes("CHIEF") || l.includes("CEO")) return "C-Level";
+        if (l.startsWith("VP") || l.includes("VICE PRESIDENT")) return "VP";
+        if (l.startsWith("M") || l.includes("MANAGER") || l.includes("DIRECTOR") || l.includes("HEAD")) return "M";
+        if (l.startsWith("IC") || l.includes("CONTRIBUTOR") || l.includes("ASSOCIATE") || l.includes("ANALYST") || l.includes("ENGINEER")) return "IC";
+        return "IC"; // Default fallback
+    }
+
+    function toggleFilterFields() {
+        const mode = document.getElementById('filterMode').value;
+        const cont = document.getElementById('filterInputContainer'), btn = document.getElementById('filterBtn'), input = document.getElementById('filterValue'), label = document.getElementById('filterLabel');
+        if (mode === 'none') { cont.style.display = 'none'; btn.style.display = 'none'; return; }
+        cont.style.display = 'block'; btn.style.display = 'block'; input.value = "";
+        if (mode === 'team') { label.innerText = "Manager Name"; input.setAttribute('list', 'namesList'); }
+        else if (mode === 'dept') { label.innerText = "Department"; input.setAttribute('list', 'deptsList'); }
+        else if (mode === 'title') { label.innerText = "Job Title"; input.setAttribute('list', 'titlesList'); }
+    }
+
+    function toggleEditFields() {
+        const mode = document.getElementById('editMode').value;
+        const tCont = document.getElementById('editTargetContainer'), eCont = document.getElementById('editExtraContainer'), btn = document.getElementById('editBtn'), eInput = document.getElementById('editExtra'), tInput = document.getElementById('editTarget');
+        tCont.style.display = 'none'; eCont.style.display = 'none'; btn.style.display = 'none';
+        if (mode === 'none') return;
+        btn.style.display = 'block'; tInput.setAttribute('list', 'namesList'); eInput.setAttribute('list', 'namesList');
+        if (mode === 'move') { tCont.style.display = 'block'; eCont.style.display = 'block'; document.getElementById('editTargetLabel').innerText = "Employee"; document.getElementById('editExtraLabel').innerText = "New Manager"; }
+        else if (mode === 'deptUpdate') { tCont.style.display = 'block'; eCont.style.display = 'block'; document.getElementById('editTargetLabel').innerText = "Employee"; document.getElementById('editExtraLabel').innerText = "New Dept"; eInput.setAttribute('list', 'deptsList'); }
+        else if (mode === 'bulk') { eCont.style.display = 'block'; document.getElementById('editExtraLabel').innerText = "New Dept for View"; eInput.setAttribute('list', 'deptsList'); }
+        else if (mode === 'hire') { tCont.style.display = 'block'; eCont.style.display = 'block'; document.getElementById('editTargetLabel').innerText = "New Name"; document.getElementById('editExtraLabel').innerText = "Manager"; tInput.removeAttribute('list'); }
+        else if (mode === 'delete') { tCont.style.display = 'block'; document.getElementById('editTargetLabel').innerText = "Employee"; }
+    }
+
+    function runFilter() {
+        const mode = document.getElementById('filterMode').value, val = document.getElementById('filterValue').value;
+        if (!val || allData.length === 0) return;
+        if (mode === 'team') {
+            const root = allData.find(d => d.id === val);
+            if (!root) return;
+            const descendants = [root];
+            function getChildren(id) { allData.forEach(d => { if (d.parentId === id) { descendants.push(d); getChildren(d.id); } }); }
+            getChildren(val);
+            currentViewData = JSON.parse(JSON.stringify(descendants));
+            const viewRoot = currentViewData.find(d => d.id === val);
+            if(viewRoot) viewRoot.parentId = null;
+        } else {
+            currentViewData = JSON.parse(JSON.stringify(allData.filter(d => (mode === 'dept' ? d.department : d.title) === val)));
+            const names = new Set(currentViewData.map(d => d.id));
+            currentViewData.forEach(d => { if (!names.has(d.parentId)) d.parentId = "VIEW_ROOT"; });
+            currentViewData.push({ id: "VIEW_ROOT", name: val + " View", isGhost: true, parentId: null });
+        }
+        refresh();
+    }
+
+    function runEdit() {
+        const mode = document.getElementById('editMode').value, target = document.getElementById('editTarget').value, extra = document.getElementById('editExtra').value;
+        if (mode === 'move') { const emp = allData.find(d => d.id === target); if (emp) emp.parentId = extra; }
+        else if (mode === 'deptUpdate') { const emp = allData.find(d => d.id === target); if (emp) emp.department = extra; }
+        else if (mode === 'bulk') { const visibleIds = new Set(currentViewData.filter(d => !d.isGhost).map(d => d.id)); allData.forEach(d => { if (visibleIds.has(d.id)) d.department = extra; }); }
+        else if (mode === 'hire') { const man = allData.find(d => d.id === extra); allData.push({ id: target, name: target, parentId: extra, title: "New Hire", department: man ? man.department : "", salary: 0 }); }
+        else if (mode === 'delete') { const p = allData.find(d => d.id === target); if (p && confirm(`Delete ${target}?`)) { allData.forEach(d => { if (d.parentId === target) d.parentId = p.parentId; }); allData = allData.filter(d => d.id !== target); } }
+        updateDeptColors(allData); resetFilter();
+    }
+
+    function updateDashboardStats(data) {
+        const real = data.filter(d => !d.isGhost);
+        if (real.length === 0) return document.getElementById('dashboardContent').innerHTML = "<p>No data.</p>";
+        
+        const totalPayroll = real.reduce((acc, d) => acc + cleanSalary(d.salary), 0);
+        const avgSalary = totalPayroll / real.length;
+        
+        const ratings = { 5:0, 4:0, 3:0, 2:0, 1:0, "NR":0 };
+        real.forEach(d => { let r = parseRating(d.rating); ratings[r]++; });
+
+        // Overhauled Job Level Analysis (Bucket Grouping)
+        const levels = { "C-Level": 0, "VP": 0, "M": 0, "IC": 0, "Unassigned": 0 };
+        real.forEach(d => {
+            let cat = categorizeLevel(d.jobLevel);
+            levels[cat]++;
+        });
+
+        const now = new Date();
+        const avgTenure = real.reduce((acc, d) => {
+            const start = new Date(d.startDate);
+            return acc + (isNaN(start) ? 0 : (now - start) / (1000 * 60 * 60 * 24 * 365.25));
+        }, 0) / real.length;
+
+        document.getElementById('statHC').innerText = real.length;
+        document.getElementById('statPayroll').innerText = "$" + Math.round(totalPayroll).toLocaleString();
+        const managers = new Set(real.map(d => d.parentId).filter(p => p && p !== 'ROOT' && p !== 'VIEW_ROOT'));
+        document.getElementById('statRatio').innerText = (managers.size > 0 ? ((real.length - 1) / managers.size).toFixed(1) : 0) + ":1";
+
+        document.getElementById('dashboardContent').innerHTML = `
+            <div class="dashboard-section">
+                <div class="dashboard-h3">View Financials</div>
+                <div class="metric-row"><span>Total Payroll</span><span class="metric-val">$${Math.round(totalPayroll).toLocaleString()}</span></div>
+                <div class="metric-row"><span>Avg. Salary</span><span class="metric-val">$${Math.round(avgSalary).toLocaleString()}</span></div>
+            </div>
+            <div class="dashboard-section">
+                <div class="dashboard-h3">Performance Talent Density</div>
+                ${[5,4,3,2,1].map(r => `<div class="metric-row"><span>Rating ${r}</span><span class="metric-val">${ratings[r]} employees</span></div>`).join('')}
+                <div class="metric-row"><span>Not Yet Rated</span><span class="metric-val">${ratings["NR"]} employees</span></div>
+            </div>
+            <div class="dashboard-section">
+                <div class="dashboard-h3">Job Level Analysis</div>
+                <div class="metric-row"><span>C-Level</span><span class="metric-val">${levels["C-Level"]}</span></div>
+                <div class="metric-row"><span>VP</span><span class="metric-val">${levels["VP"]}</span></div>
+                <div class="metric-row"><span>M (Manager/Director)</span><span class="metric-val">${levels["M"]}</span></div>
+                <div class="metric-row"><span>IC (Individual Contributor)</span><span class="metric-val">${levels["IC"]}</span></div>
+                <div class="metric-row"><span>Unassigned</span><span class="metric-val">${levels["Unassigned"]}</span></div>
+            </div>
+            <div class="dashboard-section">
+                <div class="dashboard-h3">Tenure</div>
+                <div class="metric-row"><span>Avg. Tenure</span><span class="metric-val">${avgTenure.toFixed(1)} years</span></div>
+            </div>
+        `;
+    }
+
     function calculateHeadcounts(data) {
-        const map = {};
-        data.forEach(d => { 
-            map[d.id] = d; 
-            d._totalHeadcount = 0; 
-        });
-
-        data.forEach(d => {
-            let parent = map[d.parentId];
-            while (parent) {
-                parent._totalHeadcount++;
-                parent = map[parent.parentId];
-            }
-        });
+        const map = {}; data.forEach(d => { map[d.id] = d; d._totalHeadcount = 0; });
+        data.forEach(d => { let p = map[d.parentId]; while (p) { p._totalHeadcount++; p = map[p.parentId]; } });
+        updateDashboardStats(data);
     }
 
-    function actionUpdateDept() {
-        const empName = document.getElementById('targetEmployee').value;
-        const deptName = document.getElementById('newDeptInput').value;
-        const employee = allData.find(d => d.id === empName);
-        if (employee) {
-            employee.department = deptName;
-            refresh();
-        }
+    function updateDeptColors(data) {
+        const depts = [...new Set(data.filter(d => d.department).map(d => d.department))];
+        depts.forEach((d, i) => { deptColors[d] = colorPalette[i % colorPalette.length]; });
     }
 
-    function focusOnDept() {
-        const dept = document.getElementById('targetDept').value;
-        if (!dept) return;
-        const deptData = allData.filter(d => d.department === dept || d.isGhost);
-        const processedData = JSON.parse(JSON.stringify(deptData));
-        calculateHeadcounts(processedData);
-        chart.data(processedData).render().fit();
-    }
-
-    function focusOnTeam() {
-        const name = document.getElementById('targetEmployee').value;
-        const rootNode = allData.find(d => d.id === name);
-        if (!rootNode) return;
-        const descendants = [rootNode];
-        function getChildren(parentId) {
-            allData.forEach(d => { if (d.parentId === parentId) { descendants.push(d); getChildren(d.id); } });
-        }
-        getChildren(name);
-        const focusedData = JSON.parse(JSON.stringify(descendants));
-        calculateHeadcounts(focusedData);
-        focusedData.find(d => d.id === name).parentId = null;
-        chart.data(focusedData).render().fit();
-    }
-
-    function actionMove() {
-        const empName = document.getElementById('targetEmployee').value;
-        const managerName = document.getElementById('targetManager').value;
-        const employee = allData.find(d => d.id === empName);
-        if (employee && managerName) { employee.parentId = managerName; refresh(); }
-    }
-
-    function actionDelete() {
-        const name = document.getElementById('targetEmployee').value;
-        const person = allData.find(d => d.id === name);
-        if (person && confirm(`Delete ${name}?`)) {
-            allData.forEach(d => { if (d.parentId === name) d.parentId = person.parentId; });
-            allData = allData.filter(d => d.id !== name);
-            refresh();
-        }
-    }
-
-    function actionAdd() {
-        const name = document.getElementById('newName').value;
-        const manager = document.getElementById('targetManager').value;
-        const dept = document.getElementById('newDeptInput').value;
-        if (name && manager) {
-            allData.push({ id: name, name: name, parentId: manager, title: document.getElementById('newTitle').value, department: dept });
-            refresh();
-        }
-    }
-
-    function resetFilter() { refresh(); }
+    function resetFilter() { if (allData.length === 0) return; currentViewData = JSON.parse(JSON.stringify(allData)); refresh(); }
 
     function refresh() {
-        calculateHeadcounts(allData);
+        if (currentViewData.length === 0) return;
+        calculateHeadcounts(currentViewData);
         updateAutocomplete();
-        chart.data(allData).render().fit();
+        chart.data(currentViewData).nodeContent(d => {
+            if (d.data.isGhost) return `<div style="display:none"></div>`;
+            const count = d.data._totalHeadcount;
+            const badgeColor = count > 8 ? '#dc2626' : '#1e293b';
+            const badge = count > 0 ? `<div class="headcount-badge" style="background:${badgeColor}">${count}</div>` : '';
+            const r = parseRating(d.data.rating);
+            const rColor = r === "NR" ? "#94a3b8" : (r >= 4 ? '#16a34a' : (r <= 2 ? '#dc2626' : '#64748b'));
+            const boxColor = deptColors[d.data.department] || '#cbd5e1';
+
+            return `<div style="position:relative; padding:12px; background:white; border-left: 6px solid ${boxColor}; border-radius:8px; height:76px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                ${badge}
+                <div style="font-weight:700; font-size:13px; color:#1e293b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.data.name}</div>
+                <div style="font-size:11px; color:#64748b; margin-top:2px;">${d.data.title}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                    <div style="font-size:10px; color:${boxColor}; background:${boxColor}15; padding:2px 6px; border-radius:4px; font-weight:bold;">${d.data.department}</div>
+                    <div style="display:flex; align-items:center;">
+                        <span style="font-size:9px; color:#94a3b8; font-weight:bold;">${d.data.jobLevel}</span>
+                        ${r !== "NR" ? `<span class="perf-rating" style="background:${rColor}15; color:${rColor}">${r}★</span>` : ''}
+                    </div>
+                </div>
+            </div>`;
+        }).render().fit();
     }
 
     function updateAutocomplete() {
-        const nList = document.getElementById('namesList');
-        const dList = document.getElementById('deptsList');
-        const depts = new Set();
-        nList.innerHTML = ""; dList.innerHTML = "";
+        const nL = document.getElementById('namesList'), dL = document.getElementById('deptsList'), tL = document.getElementById('titlesList');
+        const depts = new Set(), titles = new Set();
+        nL.innerHTML = ""; dL.innerHTML = ""; tL.innerHTML = "";
         allData.filter(d => !d.isGhost).forEach(d => {
-            const optN = document.createElement('option'); optN.value = d.name; nList.appendChild(optN);
-            if (d.department) depts.add(d.department);
+            const o = document.createElement('option'); o.value = d.name; nL.appendChild(o);
+            if (d.department) depts.add(d.department); if (d.title) titles.add(d.title);
         });
-        depts.forEach(dept => {
-            const optD = document.createElement('option'); optD.value = dept; dList.appendChild(optD);
-        });
+        depts.forEach(d => { const o = document.createElement('option'); o.value = d; dL.appendChild(o); });
+        titles.forEach(t => { const o = document.createElement('option'); o.value = t; tL.appendChild(o); });
     }
 
     function parseCSV(text) {
@@ -201,49 +301,41 @@
             if (c === '"' && inQ && text[i+1] === '"') { field += '"'; i++; }
             else if (c === '"') inQ = !inQ;
             else if (c === ',' && !inQ) { cur.push(field.trim()); field = ''; }
-            else if ((c === '\n' || c === '\r') && !inQ) {
-                if (field || cur.length > 0) { cur.push(field.trim()); rows.push(cur); }
-                cur = []; field = ''; if (c === '\r' && text[i+1] === '\n') i++;
-            } else field += c;
+            else if ((c === '\n' || c === '\r') && !inQ) { if (field || cur.length > 0) { cur.push(field.trim()); rows.push(cur); } cur = []; field = ''; } else field += c;
         }
-        if (field || cur.length > 0) { cur.push(field.trim()); rows.push(cur); }
-        return rows;
+        if (field || cur.length > 0) { cur.push(field.trim()); rows.push(cur); } return rows;
     }
 
     function downloadCSV() {
-        let csv = "Name,Title,Manager,Department\n";
-        allData.filter(d => !d.isGhost).forEach(d => {
-            csv += `"${d.name}","${d.title}","${d.parentId === 'ROOT' ? '' : d.parentId}","${d.department}"\n`;
-        });
+        let csv = "Full Name,Title,Manager (name),Department,Salary,Gender,2025 Mid-Year Rating,Job Level,Start Date\n";
+        allData.filter(d => !d.isGhost).forEach(d => { csv += `"${d.name}","${d.title}","${d.parentId === 'ROOT' ? '' : d.parentId}","${d.department}","${d.salary}","${d.gender}","${d.rating}","${d.jobLevel}","${d.startDate}"\n`; });
         const blob = new Blob([csv], { type: 'text/csv' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'updated_org.csv'; a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'org_executive_export.csv'; a.click();
     }
 
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const reader = new FileReader();
         reader.onload = function(event) {
-            const rows = parseCSV(event.target.result);
-            allData = rows.slice(1).map(cols => ({
-                id: cols[0], name: cols[0], title: cols[1] || "",
-                parentId: cols[2] || "ROOT", department: cols[3] || ""
+            const rows = parseCSV(event.target.result), headers = rows[0].map(h => h.trim().toLowerCase());
+            const idxFull = headers.indexOf('full name'), idxTitle = headers.indexOf('title'), idxMan = headers.indexOf('manager (name)'), idxDept = headers.indexOf('department'), idxSal = headers.indexOf('salary'), idxGen = headers.indexOf('gender'), idxRat = headers.indexOf('2025 mid-year rating'), idxLev = headers.indexOf('job level'), idxDate = headers.indexOf('start date');
+
+            allData = rows.slice(1).filter(c => c[idxFull]).map(c => ({
+                id: c[idxFull].trim(), name: c[idxFull].trim(), 
+                title: idxTitle !== -1 ? c[idxTitle] : "", 
+                parentId: (idxMan !== -1 && c[idxMan]) ? c[idxMan].trim() : "ROOT", 
+                department: idxDept !== -1 ? c[idxDept] : "",
+                salary: idxSal !== -1 ? c[idxSal] : 0, 
+                gender: idxGen !== -1 ? c[idxGen] : "N/A", 
+                rating: idxRat !== -1 ? c[idxRat] : null, 
+                jobLevel: idxLev !== -1 ? c[idxLev] : "", 
+                startDate: idxDate !== -1 ? c[idxDate] : ""
             }));
             const names = new Set(allData.map(d => d.id));
             allData.forEach(d => { if (d.parentId !== "ROOT" && !names.has(d.parentId)) d.parentId = "ROOT"; });
-            allData.push({ id: "ROOT", name: "Company", isGhost: true });
-            
-            chart.nodeWidth(d => 220).nodeHeight(d => 100).compact(true)
-                .nodeContent(d => {
-                    if (d.data.isGhost) return `<div style="display:none"></div>`;
-                    const badge = d.data._totalHeadcount > 0 ? `<div class="headcount-badge">${d.data._totalHeadcount}</div>` : '';
-                    return `
-                    <div style="position:relative; padding:12px; background:white; border:1px solid #cbd5e1; border-radius:10px; height:76px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                        ${badge}
-                        <div style="font-weight:700; font-size:13px; color:#1e293b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.data.name}</div>
-                        <div style="font-size:11px; color:#64748b; margin-top:2px;">${d.data.title}</div>
-                        <div style="display:inline-block; font-size:10px; color:#2563eb; background:#eff6ff; padding:2px 6px; border-radius:4px; margin-top:6px; font-weight:bold;">${d.data.department}</div>
-                    </div>`;
-                });
-            refresh();
+            allData.push({ id: "ROOT", name: "Company", isGhost: true, parentId: null });
+            updateDeptColors(allData);
+            chart.nodeWidth(d => 220).nodeHeight(d => 100).compact(true);
+            resetFilter();
         };
         reader.readAsText(e.target.files[0]);
     });
